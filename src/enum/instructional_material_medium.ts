@@ -1,10 +1,10 @@
 enum InstructionalMaterialMedium {
-    Print,
-    Module,
-    Video,
-    Slide,
-    DigitalFile,
-    Audio,
+    Print = "Print",
+    Module = "Module",
+    Video = "Video",
+    Slide = "Slide",
+    DigitalFile = "DigitalFile",
+    Audio = "Audio",
 }
 
 export default InstructionalMaterialMedium;

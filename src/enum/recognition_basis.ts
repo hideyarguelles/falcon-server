@@ -1,9 +1,9 @@
 enum RecognitionBasis {
-    Research,
-    Scholarship,
-    ExtensionWork,
-    Civic,
-    Instruction,
+    Research = "Research",
+    Scholarship = "Scholarship",
+    ExtensionWork = "ExtensionWork",
+    Civic = "Civic",
+    Instruction = "Instruction",
 }
 
 export default RecognitionBasis;

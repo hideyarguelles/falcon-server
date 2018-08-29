@@ -1,10 +1,10 @@
 enum ExtensionWorkRole {
-    Lecturer,
-    Trainer,
-    ResourceSpeaker,
-    Facilitator,
-    Coach,
-    MaterialWriter,
+    Lecturer = "Lecturer",
+    Trainer = "Trainer",
+    ResourceSpeaker = "ResourceSpeaker",
+    Facilitator = "Facilitator",
+    Coach = "Coach",
+    MaterialWriter = "MaterialWriter",
 }
 
 export default ExtensionWorkRole;

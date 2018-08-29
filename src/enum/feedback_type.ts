@@ -1,4 +1,4 @@
 enum FeedbackType {
-    Accepted,
-    Rejected,
+    Accepted = "Accepted",
+    Rejected = "Rejected",
 }

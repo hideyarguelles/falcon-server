@@ -1,6 +1,6 @@
 enum InstructionalMaterialAudience {
-    Student,
-    Teacher,
+    Student = "Student",
+    Teacher = "Teacher",
 }
 
 export default InstructionalMaterialAudience;

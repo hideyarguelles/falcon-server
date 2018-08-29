@@ -1,7 +1,7 @@
 enum ChangeRequestStatus {
-    Pending,
-    Approved,
-    Rejected,
+    Pending = "Pending",
+    Approved = "Approved",
+    Rejected = "Rejected",
 }
 
 export default ChangeRequestStatus;

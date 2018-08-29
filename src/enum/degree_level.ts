@@ -1,8 +1,8 @@
 enum DegreeLevel {
-    Associate,
-    Bachelor,
-    Master,
-    Doctorate,
+    Associate = "Associate",
+    Bachelor = "Bachelor",
+    Master = "Master",
+    Doctorate = "Doctorate",
 }
 
 export default DegreeLevel;

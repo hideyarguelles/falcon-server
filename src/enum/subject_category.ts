@@ -1,9 +1,9 @@
 enum SubjectCategory {
-    Pedagogical,
-    General,
-    Specialization,
-    Elective,
-    Professional,
+    Pedagogical = "Pedagogical",
+    General = "General",
+    Specialization = "Specialization",
+    Elective = "Elective",
+    Professional = "Professional",
 }
 
 export default SubjectCategory;

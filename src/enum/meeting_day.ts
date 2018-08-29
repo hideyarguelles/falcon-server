@@ -1,6 +1,6 @@
 enum MeetingDay {
-    MondayThursday,
-    TuesdayFriday,
+    MondayThursday = "MondayThursday",
+    TuesdayFriday = "TuesdayFriday",
 }
 
 export default MeetingDay;

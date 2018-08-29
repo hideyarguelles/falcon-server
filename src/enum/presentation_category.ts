@@ -1,8 +1,8 @@
 enum PresentationCategory {
-    Institutional,
-    Regional,
-    National,
-    International,
+    Institutional = "Institutional",
+    Regional = "Regional",
+    National = "National",
+    International = "International",
 }
 
 export default PresentationCategory;

@@ -1,8 +1,8 @@
 enum UserType {
-    Dean,
-    AssociateDean,
-    Faculty,
-    Clerk,
+    Dean = "Dean",
+    AssociateDean = "AssociateDean",
+    Faculty = "Faculty",
+    Clerk = "Clerk",
 }
 
 export default UserType;

@@ -1,9 +1,9 @@
 enum TermStatus {
-    Initializing,
-    Scheduling,
-    FeedbackGathering,
-    Published,
-    Archive,
+    Initializing = "Initializing",
+    Scheduling = "Scheduling",
+    FeedbackGathering = "FeedbackGathering",
+    Published = "Published",
+    Archived = "Archived",
 }
 
 export default TermStatus;

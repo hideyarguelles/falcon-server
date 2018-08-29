@@ -1,6 +1,6 @@
 enum InactivityType {
-    OnLeave,
-    Terminated,
+    OnLeave = "OnLeave",
+    Terminated = "Terminated",
 }
 
 export default InactivityType;

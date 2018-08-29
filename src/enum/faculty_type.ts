@@ -1,9 +1,9 @@
 enum FacultyType {
-    Regular,
-    Professor,
-    Administrator,
-    PartTime,
-    Adjunct,
+    Regular = "Regular",
+    Professor = "Professor",
+    Administrator = "Administrator",
+    PartTime = "PartTime",
+    Adjunct = "Adjunct",
 }
 
 export default FacultyType;

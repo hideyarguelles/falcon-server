@@ -1,7 +1,7 @@
 enum PresentationMedium {
-    Paper,
-    Poster,
-    Research,
+    Paper = "Paper",
+    Poster = "Poster",
+    Research = "Research",
 }
 
 export default PresentationMedium;

@@ -1,7 +1,7 @@
 enum Term {
-    First,
-    Second,
-    Third,
+    First = "First",
+    Second = "Second",
+    Third = "Third",
 }
 
 export default Term;
