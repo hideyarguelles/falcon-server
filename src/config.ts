@@ -10,12 +10,15 @@ export interface IConfig {
     databaseUrl: string;
 }
 
+const { DB_USERNAME, DB_PASSWORD, DB_NAME, DB_URL, DB_PORT } = process.env;
+const databaseUrl = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}:${DB_PORT}/${DB_NAME}`;
+
 const config = {
     port: process.env.PORT || 3000,
     debugLogging: process.env.NODE_ENV == 'development',
     dbsslconn: process.env.NODE_ENV != 'development',
     jwtSecret: process.env.JWT_SECRET || 'your-secret-whatever',
-    databaseUrl: process.env.DATABASE_URL || 'postgres://user:pass@localhost:5432/apidb'
+    databaseUrl
 };
 
 export { config };
