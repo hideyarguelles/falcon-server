@@ -19,6 +19,33 @@ dotenv.config({ path: ".env" });
 // Get DB connection options from env variable
 const connectionOptions = PostgressConnectionStringParser.parse(config.databaseUrl);
 
+const onDatabaseConnect = async () => {
+    const app = new Koa();
+
+    app
+        // Provides important security headers to make your app more secure
+        .use(helmet())
+
+        // Enable cors with default options
+        .use(cors())
+
+        // Logger middleware -> use winston as logger (logging.ts with config)
+        .use(logger(winston))
+
+        // Enable bodyParser with default options
+        .use(bodyParser())
+
+        // // JWT middleware -> below this line routes are only reached if JWT token is valid, secret as env variable
+        // .use(jwt({ secret: config.jwtSecret }))
+
+        // These routes are protected by the JWT middleware
+        // Also includes middleware to respond with "Method Not Allowed - 405".
+        .use(router.routes())
+        .listen(config.port);
+
+    console.log(`Server running on port ${config.port}`);
+};
+
 // create connection with database
 // note that its not active database connection
 // TypeORM creates you connection pull to uses connections from pull on your requests
@@ -36,29 +63,5 @@ createConnection({
         ssl: config.dbsslconn, // if not development, will use SSL
     },
 })
-    .then(async connection => {
-        const app = new Koa();
-
-        // Provides important security headers to make your app more secure
-        app.use(helmet());
-
-        // Enable cors with default options
-        app.use(cors());
-
-        // Logger middleware -> use winston as logger (logging.ts with config)
-        app.use(logger(winston));
-
-        // Enable bodyParser with default options
-        app.use(bodyParser());
-
-        // JWT middleware -> below this line routes are only reached if JWT token is valid, secret as env variable
-        app.use(jwt({ secret: config.jwtSecret }));
-
-        // this routes are protected by the JWT middleware, also include middleware to respond with "Method Not Allowed - 405".
-        app.use(router.routes()).use(router.allowedMethods());
-
-        app.listen(config.port);
-
-        console.log(`Server running on port ${config.port}`);
-    })
+    .then(onDatabaseConnect)
     .catch(error => console.log("TypeORM connection error: ", error));
