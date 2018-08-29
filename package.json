@@ -39,6 +39,7 @@
   ],
   "repository": "github:javieraviles/node-typescript-koa-rest",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.1",
     "@types/dotenv": "^4.0.3",
     "@types/koa": "2.0.44",
     "@types/koa-bodyparser": "^4.2.0",
@@ -56,6 +57,7 @@
   },
   "dependencies": {
     "@koa/cors": "^2.2.1",
+    "bcryptjs": "^2.4.3",
     "boom": "^7.2.0",
     "class-validator": "^0.9.1",
     "dotenv": "^6.0.0",
