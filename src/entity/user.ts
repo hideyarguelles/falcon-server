@@ -1,21 +1,44 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { Length, IsEmail } from 'class-validator';
+import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, FindOneOptions } from "typeorm";
+import { Length, IsEmail, IsNotEmpty } from "class-validator";
+import { UserType } from "../enum";
+import * as bcrypt from "bcryptjs";
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({
-        length: 80
-    })
-    @Length(10, 80)
-    name: string;
+    @Column()
+    @IsNotEmpty()
+    firstName: string;
 
-    @Column({
-        length: 100
-    })
-    @Length(10, 100)
+    @Column()
+    @IsNotEmpty()
+    lastName: string;
+
+    @Column()
+    @IsNotEmpty()
+    secret: string;
+
+    @Column()
+    @IsNotEmpty()
+    passwordIsTemporary: boolean;
+
+    @Column("enum", { enum: UserType })
+    authorization: UserType;
+
+    @Column()
     @IsEmail()
+    @IsNotEmpty()
     email: string;
+
+    comparePassword(password: string): Promise<boolean> {
+        return bcrypt.compare(password, this.secret);
+    }
+
+    static findByEmail(email: string): Promise<User | undefined> {
+        return this.findOne({
+            where: { email },
+        });
+    }
 }
