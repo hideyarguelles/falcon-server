@@ -9,15 +9,18 @@ import { createConnection } from "typeorm";
 import "reflect-metadata";
 import * as PostgressConnectionStringParser from "pg-connection-string";
 
-import { logger } from "./logging";
+import { logger } from "./middleware/logging";
 import { config } from "./config";
 import { router } from "./routes";
+import { includeCurrentUser } from "./middleware/include_current_user";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 dotenv.config({ path: ".env" });
 
 // Get DB connection options from env variable
 const connectionOptions = PostgressConnectionStringParser.parse(config.databaseUrl);
+
+const UNPROTECTED_PATHS = ["/api/sign-in"];
 
 const onDatabaseConnect = async () => {
     const app = new Koa();
@@ -35,8 +38,11 @@ const onDatabaseConnect = async () => {
         // Enable bodyParser with default options
         .use(bodyParser())
 
-        // // JWT middleware -> below this line routes are only reached if JWT token is valid, secret as env variable
-        // .use(jwt({ secret: config.jwtSecret }))
+        // JWT middleware -> below this line routes are only reached if JWT token is valid, secret as env variable
+        .use(jwt({ secret: config.jwtSecret, cookie: "token" }).unless({ path: UNPROTECTED_PATHS }))
+
+        // Include current user to ctx
+        .use(includeCurrentUser().unless({ path: UNPROTECTED_PATHS }))
 
         // These routes are protected by the JWT middleware
         // Also includes middleware to respond with "Method Not Allowed - 405".
