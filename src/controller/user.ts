@@ -1,129 +1,64 @@
 import { BaseContext } from "koa";
-import { getManager, Repository, Not, Equal } from "typeorm";
-import { validate, ValidationError } from "class-validator";
+import * as Boom from "boom";
+import * as jwt from "jsonwebtoken";
 import { User } from "../entity/user";
+import * as status from "http-status-codes";
+import { config } from "../config";
 
-export default class UserController {
-    public static async getUsers(ctx: BaseContext) {
-        // get a user repository to perform operations with user
-        const userRepository: Repository<User> = getManager().getRepository(User);
+export const signIn = async (ctx: BaseContext): Promise<void> => {
+    const { email, password } = ctx.request.body;
 
-        // load all users
-        const users: User[] = await userRepository.find();
-
-        // return OK status code and loaded users array
-        ctx.status = 200;
-        ctx.body = users;
+    if (!email || !password) {
+        const boom = Boom.badRequest("email and password is required").output;
+        ctx.status = boom.statusCode;
+        ctx.body = boom.payload;
+        return;
     }
 
-    public static async getUser(ctx: BaseContext) {
-        // get a user repository to perform operations with user
-        const userRepository: Repository<User> = getManager().getRepository(User);
+    const user = await User.findByEmail(email);
+    const isValidPassword = user && (await user.comparePassword(password));
 
-        // load user by id
-        const user: User = await userRepository.findOne(+ctx.params.id || 0);
-
-        if (user) {
-            // return OK status code and loaded user object
-            ctx.status = 200;
-            ctx.body = user;
-        } else {
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.body = "The user you are trying to retrieve doesn't exist in the db";
-        }
+    if (!user || !isValidPassword) {
+        const boom = Boom.badRequest("Invalid credentials").output;
+        ctx.status = boom.statusCode;
+        ctx.body = boom.payload;
+        return;
     }
 
-    public static async createUser(ctx: BaseContext) {
-        // get a user repository to perform operations with user
-        const userRepository: Repository<User> = getManager().getRepository(User);
+    const token = jwt.sign({ id: user.id }, config.jwtSecret);
+    ctx.cookies.set("token", token, { httpOnly: true });
+    ctx.status = status.OK;
+    ctx.body = {
+        name: {
+            first: user.firstName,
+            last: user.lastName,
+        },
+        email: user.email,
+        authorization: user.authorization,
+        passwordIsTemporary: user.passwordIsTemporary,
+    };
+};
 
-        // build up entity user to be saved
-        const userToBeSaved: User = new User();
-        userToBeSaved.name = ctx.request.body.name;
-        userToBeSaved.email = ctx.request.body.email;
+export const signOut = async (ctx: BaseContext): Promise<void> => {
+    ctx.status = status.OK;
+    ctx.cookies.set("token");
+    ctx.body = {
+        message: "Sign out success",
+    };
+};
 
-        // validate user entity
-        const errors: ValidationError[] = await validate(userToBeSaved); // errors is an array of validation errors
+export const currentUser = async (ctx: BaseContext): Promise<void> => {
+    const { user } = ctx.state;
+    ctx.status = status.OK;
+    ctx.body = {
+        name: {
+            first: user.firstName,
+            last: user.lastName,
+        },
+        email: user.email,
+        authorization: user.authorization,
+        passwordIsTemporary: user.passwordIsTemporary,
+    };
+};
 
-        if (errors.length > 0) {
-            // return BAD REQUEST status code and errors array
-            ctx.status = 400;
-            ctx.body = errors;
-        } else if (await userRepository.findOne({ email: userToBeSaved.email })) {
-            // return BAD REQUEST status code and email already exists error
-            ctx.status = 400;
-            ctx.body = "The specified e-mail address already exists";
-        } else {
-            // save the user contained in the POST body
-            const user = await userRepository.save(userToBeSaved);
-            // return CREATED status code and updated user
-            ctx.status = 201;
-            ctx.body = user;
-        }
-    }
-
-    public static async updateUser(ctx: BaseContext) {
-        // get a user repository to perform operations with user
-        const userRepository: Repository<User> = getManager().getRepository(User);
-
-        // update the user by specified id
-        // build up entity user to be updated
-        const userToBeUpdated: User = new User();
-        userToBeUpdated.id = +ctx.params.id || 0; // will always have a number, this will avoid errors
-        userToBeUpdated.name = ctx.request.body.name;
-        userToBeUpdated.email = ctx.request.body.email;
-
-        // validate user entity
-        const errors: ValidationError[] = await validate(userToBeUpdated); // errors is an array of validation errors
-
-        if (errors.length > 0) {
-            // return BAD REQUEST status code and errors array
-            ctx.status = 400;
-            ctx.body = errors;
-        } else if (!(await userRepository.findOne(userToBeUpdated.id))) {
-            // check if a user with the specified id exists
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.body = "The user you are trying to update doesn't exist in the db";
-        } else if (
-            await userRepository.findOne({
-                id: Not(Equal(userToBeUpdated.id)),
-                email: userToBeUpdated.email,
-            })
-        ) {
-            // return BAD REQUEST status code and email already exists error
-            ctx.status = 400;
-            ctx.body = "The specified e-mail address already exists";
-        } else {
-            // save the user contained in the PUT body
-            const user = await userRepository.save(userToBeUpdated);
-            // return CREATED status code and updated user
-            ctx.status = 201;
-            ctx.body = user;
-        }
-    }
-
-    public static async deleteUser(ctx: BaseContext) {
-        // get a user repository to perform operations with user
-        const userRepository = getManager().getRepository(User);
-
-        // find the user by specified id
-        const userToRemove: User = await userRepository.findOne(+ctx.params.id || 0);
-        if (!userToRemove) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.body = "The user you are trying to delete doesn't exist in the db";
-        } else if (+ctx.state.user.id !== userToRemove.id) {
-            // check user's token id and user id are the same
-            // if not, return a FORBIDDEN status code and error message
-            ctx.status = 403;
-            ctx.body = "A user can only be deleted by himself";
-        } else {
-            // the user is there so can be removed
-            await userRepository.remove(userToRemove);
-            // return a NO CONTENT status code
-            ctx.status = 204;
-        }
-    }
-}
+export const setPassword = async (ctx: BaseContext): Promise<void> => {};
