@@ -19,6 +19,10 @@ export default class Degree extends BaseEntity {
     @IsNotEmpty()
     completionYear: string;
 
+    //
+    // ─── Relations ───────────────────────────────────────────────────────────────────────────
+    //
+
     @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.degrees)
     facultyMember: FacultyMember;
 }

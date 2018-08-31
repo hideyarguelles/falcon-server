@@ -19,6 +19,10 @@ export default class ExtensionWork extends BaseEntity {
     @IsNotEmpty()
     venue: string;
 
+    //
+    // ─── Relations ──────────────────────────────────────────────────────────────────
+    //
+
     @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.extensionWorks)
     facultyMember: FacultyMember;
 }

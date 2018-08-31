@@ -37,6 +37,10 @@ export default class Presentation extends BaseEntity {
     @Column()
     daysDuration: number;
 
+    //
+    // ─── Relations ───────────────────────────────────────────────────────────────────────────
+    //
+
     @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.recognitions)
     facultyMember: FacultyMember;
 }

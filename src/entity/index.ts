@@ -6,6 +6,8 @@ export { default as Presentation } from "./presentation";
 export { default as Recognition } from "./recognition";
 export { default as Subject } from "./subject";
 export { default as User } from "./user";
+export { default as ClassSchedule } from "./class_schedule";
+export { default as Term } from "./term";
 export {
     DegreeAddRequest,
     RecognitionAddRequest,

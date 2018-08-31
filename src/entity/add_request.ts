@@ -19,6 +19,10 @@ class AddRequest extends BaseEntity {
     submittedDate: string;
 }
 
+//
+// ─── Implementations ─────────────────────────────────────────────────────────────
+//
+
 @Entity()
 export class DegreeAddRequest extends Degree {
     @Column((type?: any) => AddRequest)

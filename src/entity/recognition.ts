@@ -23,6 +23,10 @@ export default class Recognition extends BaseEntity {
     @IsNotEmpty()
     sponsor: string;
 
+    //
+    // ─── Relations ───────────────────────────────────────────────────────────────────────────
+    //
+
     @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.recognitions)
     facultyMember: FacultyMember;
 }

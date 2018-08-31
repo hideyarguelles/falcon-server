@@ -33,6 +33,10 @@ export default class User extends BaseEntity {
     @IsNotEmpty()
     email: string;
 
+    //
+    // ─── Functions ───────────────────────────────────────────────────────────────────────────
+    //
+
     comparePassword(password: string): Promise<boolean> {
         return bcrypt.compare(password, this.secret);
     }

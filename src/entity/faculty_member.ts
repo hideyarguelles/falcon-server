@@ -18,7 +18,9 @@ import {
     InstructionalMaterial,
     ExtensionWork,
     Degree,
+    Term
 } from "./";
+import ClassSchedule from "./class_schedule";
 
 @Entity()
 export default class FacultyMember extends BaseEntity {
@@ -42,8 +44,22 @@ export default class FacultyMember extends BaseEntity {
     @IsNotEmpty()
     birthDate: string;
 
+    //
+    // ─── Relations ───────────────────────────────────────────────────────────────────────────
+    //
+
     @ManyToMany((type?: any) => Subject, (s: Subject) => s.specializedFaculty)
     specializedSubjects: Subject[];
+
+    @ManyToMany((type?: any) => Term, (t: Term) => t.facultyPool)
+    involvedTerms: Term[];
+
+    @OneToMany((type?: any) => ClassSchedule, (cs: ClassSchedule) => cs.assignedFacultyMember)
+    assignedClassSchedules: ClassSchedule[];
+
+    //
+    // ─── Subdocuments ───────────────────────────────────────────────────────────────────────────
+    //
 
     @OneToMany((type?: any) => Presentation, (p: Presentation) => p.facultyMember)
     presentations: Presentation[];

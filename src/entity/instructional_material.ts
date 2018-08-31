@@ -25,6 +25,10 @@ export default class InstructionalMaterial extends BaseEntity {
     @Column({ nullable: true })
     level: number;
 
+    //
+    // ─── Relations ───────────────────────────────────────────────────────────────────────────
+    //
+
     @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.instructionalMaterials)
     facultyMember: FacultyMember;
 }
