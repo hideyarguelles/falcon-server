@@ -2,7 +2,7 @@ export { default as UserType } from "./user_type";
 export { default as Term } from "./term";
 export { default as TermStatus } from "./term_status";
 export { default as MeetingDays } from "./meeting_days";
-export { default as MeetingHour } from "./meeting_hour";
+export { default as MeetingHours } from "./meeting_hours";
 export { default as SubjectCategory } from "./subject_category";
 export { default as Sex } from "./sex";
 export { default as FacultyMemberType } from "./faculty_member_type";
