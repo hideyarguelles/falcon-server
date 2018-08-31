@@ -1,5 +1,5 @@
 export { default as UserType } from "./user_type";
-export { default as Term } from "./term";
+export { default as OrdinalTerm } from "./ordinal_term";
 export { default as TermStatus } from "./term_status";
 export { default as MeetingDays } from "./meeting_days";
 export { default as MeetingHours } from "./meeting_hours";

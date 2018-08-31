@@ -1,7 +1,7 @@
-enum Term {
+enum OrdinalTerm {
     First = "First",
     Second = "Second",
     Third = "Third",
 }
 
-export default Term;
+export default OrdinalTerm;
