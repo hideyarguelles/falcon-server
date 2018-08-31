@@ -1,7 +1,7 @@
 export { default as UserType } from "./user_type";
 export { default as Term } from "./term";
 export { default as TermStatus } from "./term_status";
-export { default as MeetingDay } from "./meeting_day";
+export { default as MeetingDays } from "./meeting_days";
 export { default as MeetingHour } from "./meeting_hour";
 export { default as SubjectCategory } from "./subject_category";
 export { default as Sex } from "./sex";
