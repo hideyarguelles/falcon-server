@@ -1,10 +1,10 @@
 import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToMany } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-import { FacultyMember } from "./faculty_member";
+import { FacultyMember } from "./";
 import { SubjectCategory } from "../enum";
 
 @Entity()
-export class Subject extends BaseEntity {
+export default class Subject extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 

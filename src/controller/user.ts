@@ -1,7 +1,7 @@
 import { BaseContext } from "koa";
 import * as Boom from "boom";
 import * as jwt from "jsonwebtoken";
-import { User } from "../entity/user";
+import { User } from "../entity";
 import * as status from "http-status-codes";
 import { config } from "../config";
 

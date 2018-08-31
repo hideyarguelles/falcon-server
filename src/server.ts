@@ -9,12 +9,14 @@ import { createConnection } from "typeorm";
 import "reflect-metadata";
 import * as PostgressConnectionStringParser from "pg-connection-string";
 
+import * as entities from "./entity";
 import { logger } from "./middleware/logging";
 import { config } from "./config";
 import { router } from "./routes";
 import { includeCurrentUser } from "./middleware/include_current_user";
 
 // Load environment variables from .env file, where API keys and passwords are configured
+console.log("Loading environmental variables...");
 dotenv.config({ path: ".env" });
 
 // Get DB connection options from env variable
@@ -52,6 +54,8 @@ const onDatabaseConnect = async () => {
     console.log(`Server running on port ${config.port}`);
 };
 
+console.log("Connecting to the database...");
+
 // create connection with database
 // note that its not active database connection
 // TypeORM creates you connection pull to uses connections from pull on your requests
@@ -64,7 +68,7 @@ createConnection({
     database: connectionOptions.database,
     synchronize: true,
     logging: false,
-    entities: ["dist/entity/**/*.js"],
+    entities: Object.values(entities),
     extra: {
         ssl: config.dbsslconn, // if not development, will use SSL
     },

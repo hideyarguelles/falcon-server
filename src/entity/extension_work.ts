@@ -1,10 +1,10 @@
 import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { IsNotEmpty } from "class-validator";
 import { ExtensionWorkRole } from "../enum";
-import { FacultyMember } from "./faculty_member";
+import { FacultyMember } from "./";
 
 @Entity()
-export class ExtensionWork extends BaseEntity {
+export default class ExtensionWork extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 

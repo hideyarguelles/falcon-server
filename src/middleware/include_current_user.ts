@@ -2,7 +2,7 @@ import * as Koa from "koa";
 import * as Boom from "boom";
 import * as jwt from "jsonwebtoken";
 import * as unless from "koa-unless";
-import { User } from "../entity/user";
+import { User } from "../entity";
 
 interface AppToken {
     id: string;

@@ -4,7 +4,7 @@ import { UserType } from "../enum";
 import * as bcrypt from "bcryptjs";
 
 @Entity()
-export class User extends BaseEntity {
+export default class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 

@@ -9,17 +9,19 @@ import {
     OneToMany,
 } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-import { User } from "./user";
 import { Sex, FacultyMemberType, ActivityType } from "../enum";
-import { Subject } from "./subject";
-import { Presentation } from "./presentation";
-import { Recognition } from "./recognition";
-import { InstructionalMaterial } from "./instructional_material";
-import { ExtensionWork } from "./extension_work";
-import { Degree } from "./degree";
+import {
+    User,
+    Subject,
+    Presentation,
+    Recognition,
+    InstructionalMaterial,
+    ExtensionWork,
+    Degree,
+} from "./";
 
 @Entity()
-export class FacultyMember extends BaseEntity {
+export default class FacultyMember extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 

@@ -1,10 +1,10 @@
 import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { IsNotEmpty } from "class-validator";
 import { PresentationCategory, PresentationMedium } from "../enum";
-import { FacultyMember } from "./faculty_member";
+import { FacultyMember } from "./";
 
 @Entity()
-export class Presentation extends BaseEntity {
+export default class Presentation extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
