@@ -1,5 +1,5 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, FindOneOptions } from "typeorm";
-import { Length, IsEmail, IsNotEmpty } from "class-validator";
+import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, Index } from "typeorm";
+import { IsEmail, IsNotEmpty } from "class-validator";
 import { UserType } from "../enum";
 import * as bcrypt from "bcryptjs";
 
@@ -28,6 +28,7 @@ export class User extends BaseEntity {
     authorization: UserType;
 
     @Column()
+    @Index()
     @IsEmail()
     @IsNotEmpty()
     email: string;
