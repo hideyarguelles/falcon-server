@@ -2,6 +2,7 @@ import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToMany } from "
 import { IsNotEmpty } from "class-validator";
 import { TermStatus, OrdinalTerm } from "../enum";
 import FacultyMember from "./faculty_member";
+import TimeConstraint from "./time_constraint";
 
 @Entity()
 export default class Term extends BaseEntity {
@@ -17,6 +18,6 @@ export default class Term extends BaseEntity {
     @Column("enum", { enum: TermStatus })
     status: TermStatus;
 
-    @ManyToMany((type?: any) => FacultyMember, (fm: FacultyMember) => fm.involvedTerms)
-    facultyPool: FacultyMember[];
+    @ManyToMany((type?: any) => TimeConstraint, (tc: TimeConstraint) => tc.term)
+    timeConstraints: TimeConstraint[];
 }

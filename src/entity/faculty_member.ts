@@ -18,7 +18,8 @@ import {
     InstructionalMaterial,
     ExtensionWork,
     Degree,
-    Term
+    Term,
+    TimeConstraint,
 } from "./";
 import ClassSchedule from "./class_schedule";
 
@@ -51,11 +52,11 @@ export default class FacultyMember extends BaseEntity {
     @ManyToMany((type?: any) => Subject, (s: Subject) => s.specializedFaculty)
     specializedSubjects: Subject[];
 
-    @ManyToMany((type?: any) => Term, (t: Term) => t.facultyPool)
-    involvedTerms: Term[];
-
     @OneToMany((type?: any) => ClassSchedule, (cs: ClassSchedule) => cs.assignedFacultyMember)
     assignedClassSchedules: ClassSchedule[];
+
+    @OneToMany((type?: any) => TimeConstraint, (tc: TimeConstraint) => tc.facultyMember)
+    timeConstraints: TimeConstraint[];
 
     //
     // ─── Subdocuments ───────────────────────────────────────────────────────────────────────────

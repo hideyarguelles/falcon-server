@@ -8,6 +8,7 @@ export { default as Subject } from "./subject";
 export { default as User } from "./user";
 export { default as ClassSchedule } from "./class_schedule";
 export { default as Term } from "./term";
+export { default as TimeConstraint } from "./time_constraint";
 export {
     DegreeAddRequest,
     RecognitionAddRequest,
