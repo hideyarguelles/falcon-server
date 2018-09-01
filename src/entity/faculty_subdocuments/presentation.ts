@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { PresentationCategory, PresentationMedium } from "../enum";
-import { FacultyMember } from "./";
+import { PresentationCategory, PresentationMedium } from "../../enum";
+import { FacultyMember } from "..";
 
 @Entity()
 export default class Presentation extends BaseEntity {

@@ -1,10 +1,10 @@
 import { IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../enum";
-import { FacultyMember } from "./";
+import { DegreeLevel } from "../../enum";
+import { FacultyMember } from "..";
 
 @Entity()
-export default class InstructionalMaterial extends BaseEntity {
+export default class Degree extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -12,24 +12,18 @@ export default class InstructionalMaterial extends BaseEntity {
     @IsNotEmpty()
     title: string;
 
-    @Column("enum", { enum: InstructionalMaterialMedium })
-    medium: InstructionalMaterialMedium;
-
-    @Column("enum", { enum: InstructionalMaterialAudience })
-    audience: InstructionalMaterialAudience;
+    @Column("enum", { enum: DegreeLevel })
+    level: DegreeLevel;
 
     @Column()
     @IsNotEmpty()
-    usageYear: string;
-
-    @Column({ nullable: true })
-    level: number;
+    completionYear: string;
 
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.instructionalMaterials, {
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.degrees, {
         onDelete: "CASCADE",
     })
     facultyMember: FacultyMember;

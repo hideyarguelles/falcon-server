@@ -1,10 +1,10 @@
 import { IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { RecognitionBasis } from "../enum";
-import { FacultyMember } from "./";
+import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../../enum";
+import { FacultyMember } from "..";
 
 @Entity()
-export default class Recognition extends BaseEntity {
+export default class InstructionalMaterial extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -12,22 +12,24 @@ export default class Recognition extends BaseEntity {
     @IsNotEmpty()
     title: string;
 
-    @Column("enum", { enum: RecognitionBasis })
-    basis: RecognitionBasis;
+    @Column("enum", { enum: InstructionalMaterialMedium })
+    medium: InstructionalMaterialMedium;
+
+    @Column("enum", { enum: InstructionalMaterialAudience })
+    audience: InstructionalMaterialAudience;
 
     @Column()
     @IsNotEmpty()
-    date: string;
+    usageYear: string;
 
-    @Column()
-    @IsNotEmpty()
-    sponsor: string;
+    @Column({ nullable: true })
+    level: number;
 
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.recognitions, {
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.instructionalMaterials, {
         onDelete: "CASCADE",
     })
     facultyMember: FacultyMember;

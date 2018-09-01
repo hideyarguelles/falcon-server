@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ExtensionWorkRole } from "../enum";
-import { FacultyMember } from "./";
+import { ExtensionWorkRole } from "../../enum";
+import { FacultyMember } from "..";
 
 @Entity()
 export default class ExtensionWork extends BaseEntity {

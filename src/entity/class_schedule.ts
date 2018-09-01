@@ -9,8 +9,7 @@ import {
     PrimaryGeneratedColumn,
 } from "typeorm";
 import { MeetingDays, MeetingHours } from "../enum";
-import { Subject, Term } from "./";
-import FacultyMemberClassFeedback from "./feedback";
+import { Subject, Term, FacultyMemberClassFeedback } from "./";
 
 @Entity()
 export default class ClassSchedule extends BaseEntity {

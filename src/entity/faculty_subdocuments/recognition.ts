@@ -1,10 +1,10 @@
 import { IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { DegreeLevel } from "../enum";
-import { FacultyMember } from "./";
+import { RecognitionBasis } from "../../enum";
+import { FacultyMember } from "..";
 
 @Entity()
-export default class Degree extends BaseEntity {
+export default class Recognition extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -12,18 +12,22 @@ export default class Degree extends BaseEntity {
     @IsNotEmpty()
     title: string;
 
-    @Column("enum", { enum: DegreeLevel })
-    level: DegreeLevel;
+    @Column("enum", { enum: RecognitionBasis })
+    basis: RecognitionBasis;
 
     @Column()
     @IsNotEmpty()
-    completionYear: string;
+    date: string;
+
+    @Column()
+    @IsNotEmpty()
+    sponsor: string;
 
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.degrees, {
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.recognitions, {
         onDelete: "CASCADE",
     })
     facultyMember: FacultyMember;
