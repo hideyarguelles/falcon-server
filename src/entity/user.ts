@@ -1,7 +1,7 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, Index } from "typeorm";
-import { IsEmail, IsNotEmpty } from "class-validator";
-import { UserType } from "../enum";
 import * as bcrypt from "bcryptjs";
+import { IsEmail, IsNotEmpty } from "class-validator";
+import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+import { UserType } from "../enum";
 
 @Entity()
 export default class User extends BaseEntity {

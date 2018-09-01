@@ -1,19 +1,19 @@
+import * as cors from "@koa/cors";
+import * as dotenv from "dotenv";
 import * as Koa from "koa";
-import * as jwt from "koa-jwt";
 import * as bodyParser from "koa-bodyparser";
 import * as helmet from "koa-helmet";
-import * as cors from "@koa/cors";
-import * as winston from "winston";
-import * as dotenv from "dotenv";
-import { createConnection } from "typeorm";
-import "reflect-metadata";
+import * as jwt from "koa-jwt";
 import * as PostgressConnectionStringParser from "pg-connection-string";
-
-import * as entities from "./entity";
-import { logger } from "./middleware/logging";
+import "reflect-metadata";
+import { createConnection } from "typeorm";
+import * as winston from "winston";
 import { config } from "./config";
-import { router } from "./routes";
+import * as entities from "./entity";
 import { includeCurrentUser } from "./middleware/include_current_user";
+import { logger } from "./middleware/logging";
+import { router } from "./routes";
+
 
 // Load environment variables from .env file, where API keys and passwords are configured
 console.log("Loading environmental variables...");

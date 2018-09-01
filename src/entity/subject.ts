@@ -1,7 +1,7 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToMany, OneToMany } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-import { FacultyMember } from "./";
+import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { SubjectCategory } from "../enum";
+import { FacultyMember } from "./";
 import ClassSchedule from "./class_schedule";
 
 @Entity()

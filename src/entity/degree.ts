@@ -1,7 +1,7 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-import { FacultyMember } from "./";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { DegreeLevel } from "../enum";
+import { FacultyMember } from "./";
 
 @Entity()
 export default class Degree extends BaseEntity {

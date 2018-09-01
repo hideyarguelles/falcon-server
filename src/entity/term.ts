@@ -1,7 +1,5 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToMany } from "typeorm";
-import { IsNotEmpty } from "class-validator";
-import { TermStatus, OrdinalTerm } from "../enum";
-import FacultyMember from "./faculty_member";
+import { BaseEntity, Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { OrdinalTerm, TermStatus } from "../enum";
 import TimeConstraint from "./time_constraint";
 
 @Entity()

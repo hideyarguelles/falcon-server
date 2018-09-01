@@ -1,7 +1,7 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn } from "typeorm";
-import { ChangeRequestStatus } from "../enum";
 import { IsNotEmpty } from "class-validator";
-import { Degree, Recognition, Presentation, InstructionalMaterial, ExtensionWork } from "./";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { ChangeRequestStatus } from "../enum";
+import { Degree, ExtensionWork, InstructionalMaterial, Presentation, Recognition } from "./";
 
 @Entity()
 class AddRequest extends BaseEntity {

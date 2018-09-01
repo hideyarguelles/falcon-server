@@ -1,25 +1,24 @@
+import { IsNotEmpty } from "class-validator";
 import {
     BaseEntity,
-    Entity,
     Column,
-    PrimaryGeneratedColumn,
-    OneToOne,
-    ManyToMany,
+    Entity,
     JoinColumn,
+    ManyToMany,
     OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
 } from "typeorm";
-import { IsNotEmpty } from "class-validator";
-import { Sex, FacultyMemberType, ActivityType } from "../enum";
+import { ActivityType, FacultyMemberType, Sex } from "../enum";
 import {
-    User,
-    Subject,
+    Degree,
+    ExtensionWork,
+    InstructionalMaterial,
     Presentation,
     Recognition,
-    InstructionalMaterial,
-    ExtensionWork,
-    Degree,
-    Term,
+    Subject,
     TimeConstraint,
+    User,
 } from "./";
 import ClassSchedule from "./class_schedule";
 

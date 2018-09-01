@@ -1,6 +1,6 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-import { InstructionalMaterialMedium, InstructionalMaterialAudience } from "../enum";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../enum";
 import { FacultyMember } from "./";
 
 @Entity()

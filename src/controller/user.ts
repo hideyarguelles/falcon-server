@@ -1,9 +1,9 @@
-import { BaseContext } from "koa";
 import * as Boom from "boom";
-import * as jwt from "jsonwebtoken";
-import { User } from "../entity";
 import * as status from "http-status-codes";
+import * as jwt from "jsonwebtoken";
+import { BaseContext } from "koa";
 import { config } from "../config";
+import { User } from "../entity";
 
 export const signIn = async (ctx: BaseContext): Promise<void> => {
     const { email, password } = ctx.request.body;

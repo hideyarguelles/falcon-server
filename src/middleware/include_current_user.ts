@@ -1,6 +1,6 @@
-import * as Koa from "koa";
 import * as Boom from "boom";
 import * as jwt from "jsonwebtoken";
+import * as Koa from "koa";
 import * as unless from "koa-unless";
 import { User } from "../entity";
 

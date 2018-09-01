@@ -1,6 +1,6 @@
 import * as Koa from "koa";
-import { config } from "../config";
 import * as winston from "winston";
+import { config } from "../config";
 
 export function logger(winstonInstance) {
     return async (ctx: Koa.Context, next: () => Promise<any>) => {

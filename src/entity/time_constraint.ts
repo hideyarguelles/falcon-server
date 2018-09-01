@@ -1,14 +1,6 @@
-import {
-    BaseEntity,
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    ManyToMany,
-    OneToMany,
-    ManyToOne,
-} from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MeetingDays, MeetingHours } from "../enum";
-import { Term, FacultyMember } from "./";
+import { FacultyMember, Term } from "./";
 
 @Entity()
 export default class TimeConstraint extends BaseEntity {
