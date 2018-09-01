@@ -1,7 +1,7 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-import { FacultyMember, Subject } from "./";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MeetingDays, MeetingHours } from "../enum";
+import { FacultyMember, Subject } from "./";
 
 @Entity()
 export default class ClassSchedule extends BaseEntity {
