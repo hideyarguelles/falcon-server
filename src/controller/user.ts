@@ -1,11 +1,11 @@
 import * as Boom from "boom";
 import * as status from "http-status-codes";
 import * as jwt from "jsonwebtoken";
-import { BaseContext } from "koa";
+import { Context } from "koa";
 import { config } from "../config";
 import { User } from "../entity";
 
-export const signIn = async (ctx: BaseContext): Promise<void> => {
+export const signIn = async (ctx: Context): Promise<void> => {
     const { email, password } = ctx.request.body;
 
     if (!email || !password) {
@@ -39,7 +39,7 @@ export const signIn = async (ctx: BaseContext): Promise<void> => {
     };
 };
 
-export const signOut = async (ctx: BaseContext): Promise<void> => {
+export const signOut = async (ctx: Context): Promise<void> => {
     ctx.status = status.OK;
     ctx.cookies.set("token");
     ctx.body = {
@@ -47,7 +47,7 @@ export const signOut = async (ctx: BaseContext): Promise<void> => {
     };
 };
 
-export const currentUser = async (ctx: BaseContext): Promise<void> => {
+export const currentUser = async (ctx: Context): Promise<void> => {
     const { user } = ctx.state;
     ctx.status = status.OK;
     ctx.body = {
@@ -61,4 +61,4 @@ export const currentUser = async (ctx: BaseContext): Promise<void> => {
     };
 };
 
-export const setPassword = async (ctx: BaseContext): Promise<void> => {};
+export const setPassword = async (ctx: Context): Promise<void> => {};
