@@ -23,6 +23,8 @@ export default class Degree extends BaseEntity {
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.degrees)
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.degrees, {
+        onDelete: "CASCADE",
+    })
     facultyMember: FacultyMember;
 }

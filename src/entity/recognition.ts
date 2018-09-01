@@ -27,6 +27,8 @@ export default class Recognition extends BaseEntity {
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.recognitions)
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.recognitions, {
+        onDelete: "CASCADE",
+    })
     facultyMember: FacultyMember;
 }

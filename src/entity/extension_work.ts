@@ -23,6 +23,8 @@ export default class ExtensionWork extends BaseEntity {
     // ─── Relations ──────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.extensionWorks)
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.extensionWorks, {
+        onDelete: "CASCADE",
+    })
     facultyMember: FacultyMember;
 }

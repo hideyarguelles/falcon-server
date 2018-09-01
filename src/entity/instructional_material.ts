@@ -29,6 +29,8 @@ export default class InstructionalMaterial extends BaseEntity {
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.instructionalMaterials)
+    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.instructionalMaterials, {
+        onDelete: "CASCADE",
+    })
     facultyMember: FacultyMember;
 }
