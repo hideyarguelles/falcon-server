@@ -3,6 +3,7 @@ import * as jwt from "jsonwebtoken";
 import * as Koa from "koa";
 import * as unless from "koa-unless";
 import { User } from "../entity";
+import { setContextBoom } from "../utils/set_context_boom";
 
 interface AppToken {
     id: string;
@@ -19,18 +20,14 @@ export const includeCurrentUser = (): Middleware => {
         const { id } = <AppToken>jwt.decode(token);
 
         if (!id) {
-            const boom = Boom.badRequest("ID not found in JWT").output;
-            ctx.status = boom.statusCode;
-            ctx.body = boom.payload;
+            setContextBoom(ctx, Boom.badRequest("ID not found in JWT"));
             ctx.cookies.set("token"); // Remove invalid token
             return;
         }
 
         const user = await User.findOne({ where: { id } });
         if (!user) {
-            const boom = Boom.badRequest("User not found").output;
-            ctx.status = boom.statusCode;
-            ctx.body = boom.payload;
+            setContextBoom(ctx, Boom.badRequest("User not found"));
             ctx.cookies.set("token"); // Remove invalid token
             return;
         }

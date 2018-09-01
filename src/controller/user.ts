@@ -4,14 +4,13 @@ import * as jwt from "jsonwebtoken";
 import { Context } from "koa";
 import { config } from "../config";
 import { User } from "../entity";
+import { setContextBoom } from "../utils/set_context_boom";
 
 export const signIn = async (ctx: Context): Promise<void> => {
     const { email, password } = ctx.request.body;
 
     if (!email || !password) {
-        const boom = Boom.badRequest("email and password is required").output;
-        ctx.status = boom.statusCode;
-        ctx.body = boom.payload;
+        setContextBoom(ctx, Boom.badRequest("email and password is required"));
         return;
     }
 
@@ -19,9 +18,7 @@ export const signIn = async (ctx: Context): Promise<void> => {
     const isValidPassword = user && (await user.comparePassword(password));
 
     if (!user || !isValidPassword) {
-        const boom = Boom.badRequest("Invalid credentials").output;
-        ctx.status = boom.statusCode;
-        ctx.body = boom.payload;
+        setContextBoom(ctx, Boom.badRequest("Invalid credentials"));
         return;
     }
 
