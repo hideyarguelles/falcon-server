@@ -1,16 +1,20 @@
+import * as status from "http-status-codes";
 import { Context } from "koa";
 import { FacultyMember } from "../entity";
+import { UserType } from "../enum";
+import { requireAuthorization } from "../utils/require_authorization";
 
-export const getAllFaculty = async (ctx: Context): Promise<void> => {
-    // TODO: Remove experiment
+export default class FacultyController {
+    @requireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
+    static async getAllFaculty(ctx: Context): Promise<void> {
+        const facultyMembers = await FacultyMember.find();
+        ctx.status = status.OK;
+        ctx.body = facultyMembers;
+    }
 
-    const select = ctx.request.query.select;
-    const facultyMembers = await FacultyMember.find();
+    @requireAuthorization([])
+    static async addFacultyMember(ctx: Context): Promise<void> {}
 
-    ctx.status = 200;
-    ctx.body = {
-        facultyMembers,
-        select,
-        success: true,
-    };
-};
+    @requireAuthorization([])
+    static async updateFacultyMember(ctx: Context): Promise<void> {}
+}

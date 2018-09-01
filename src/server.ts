@@ -12,7 +12,7 @@ import { config } from "./config";
 import * as entities from "./entity";
 import { includeCurrentUser } from "./middleware/include_current_user";
 import { logger } from "./middleware/logging";
-import { router } from "./routes";
+import { apiRouter } from "./routes";
 
 
 // Load environment variables from .env file, where API keys and passwords are configured
@@ -48,7 +48,7 @@ const onDatabaseConnect = async () => {
 
         // These routes are protected by the JWT middleware
         // Also includes middleware to respond with "Method Not Allowed - 405".
-        .use(router.routes())
+        .use(apiRouter.routes())
         .listen(config.port);
 
     console.log(`Server running on port ${config.port}`);

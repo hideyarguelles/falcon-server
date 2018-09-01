@@ -1,20 +1,34 @@
 import * as Router from "koa-router";
-import * as controller from "./controller";
+import { UserController, FacultyController } from "./controller";
+import { UserType } from "./enum";
+import { nestRouter } from "./utils/nest_router";
 
-const router = new Router();
-router.prefix("/api");
+const apiRouter = new Router();
+apiRouter.prefix("/api");
 
-// User routes
-const userRouter = new Router();
-userRouter.post("/sign-in", controller.user.signIn);
-userRouter.post("/sign-out", controller.user.signOut);
-userRouter.post("/set-password", controller.user.setPassword);
-userRouter.get("/current-user", controller.user.currentUser);
+//
+// ─── User routes ──────────────────────────────────────────────────────────────────────────
+//
 
-const nest = (nestedRouter: Router): void => {
-    router.use(nestedRouter.routes()).use(nestedRouter.allowedMethods());
-};
+const userRouter = new Router()
+    .post("/sign-in", UserController.signIn)
+    .post("/sign-out", UserController.signOut)
+    .post("/set-password", UserController.setPassword)
+    .get("/current-user", UserController.currentUser);
 
-nest(userRouter);
+//
+// ─── Faculty Routes ─────────────────────────────────────────────────────────────
+//
 
-export { router };
+const facultyRouter = new Router();
+facultyRouter
+    .prefix("/faculty")
+    .get("/", FacultyController.getAllFaculty)
+    .post("/", FacultyController.addFacultyMember);
+
+//
+// ─── Nesting ───────────────────────────────────────────────────────────────────────────
+//
+
+nestRouter(apiRouter, [userRouter, facultyRouter]);
+export { apiRouter };

@@ -1,4 +1,2 @@
-import * as user from "./user";
-
-export { user };
-
+export { default as FacultyController } from "./faculty";
+export { default as UserController } from "./user";
