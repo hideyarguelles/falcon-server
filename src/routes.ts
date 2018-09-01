@@ -1,11 +1,8 @@
 import * as Router from "koa-router";
 import * as controller from "./controller";
 
-// General routes
 const router = new Router();
 router.prefix("/api");
-router.get("/", controller.general.helloWorld);
-router.get("/jwt", controller.general.getJwtPayload);
 
 // User routes
 const userRouter = new Router();
@@ -21,4 +18,3 @@ const nest = (nestedRouter: Router): void => {
 nest(userRouter);
 
 export { router };
-
