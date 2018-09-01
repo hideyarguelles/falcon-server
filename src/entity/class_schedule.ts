@@ -3,13 +3,13 @@ import {
     BaseEntity,
     Column,
     Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    OneToOne,
     JoinColumn,
+    ManyToOne,
+    OneToOne,
+    PrimaryGeneratedColumn,
 } from "typeorm";
 import { MeetingDays, MeetingHours } from "../enum";
-import { FacultyMember, Subject } from "./";
+import { Subject, Term } from "./";
 import FacultyMemberClassFeedback from "./feedback";
 
 @Entity()
@@ -50,4 +50,9 @@ export default class ClassSchedule extends BaseEntity {
     )
     @JoinColumn()
     feedback: FacultyMemberClassFeedback;
+
+    @ManyToOne((type?: any) => Term, (t: Term) => t.classSchedules, {
+        onDelete: "CASCADE",
+    })
+    term: Term;
 }
