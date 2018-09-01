@@ -1,11 +1,13 @@
-import { IsNotEmpty } from "class-validator";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, OneToOne } from "typeorm";
-import { MeetingDays, MeetingHours, FeedbackStatus } from "../enum";
-import { FacultyMember, Subject } from "./";
+import { BaseEntity, Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { FeedbackStatus } from "../enum";
+import { FacultyMember } from "./";
 import ClassSchedule from "./class_schedule";
 
 @Entity()
 export default class FacultyMemberClassFeedback extends BaseEntity {
+    @PrimaryGeneratedColumn()
+    id: number;
+
     @Column("enum", { enum: FeedbackStatus })
     status: FeedbackStatus;
 
@@ -14,7 +16,7 @@ export default class FacultyMemberClassFeedback extends BaseEntity {
     //
 
     @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm, {
-        onDelete: "CASCADE"
+        onDelete: "CASCADE",
     })
     facultyMember: FacultyMember;
 
