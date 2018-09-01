@@ -21,15 +21,12 @@ import {
     User,
 } from "./";
 import ClassSchedule from "./class_schedule";
+import FacultyMemberClassFeedback from "./feedback";
 
 @Entity()
 export default class FacultyMember extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
-
-    @OneToOne(type => User)
-    @JoinColumn()
-    user: User;
 
     @Column("enum", { enum: Sex })
     sex: Sex;
@@ -48,11 +45,20 @@ export default class FacultyMember extends BaseEntity {
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
+    @OneToOne(type => User, {
+        onDelete: "CASCADE",
+    })
+    @JoinColumn()
+    user: User;
+
     @ManyToMany((type?: any) => Subject, (s: Subject) => s.specializedFaculty)
     specializedSubjects: Subject[];
 
-    @OneToMany((type?: any) => ClassSchedule, (cs: ClassSchedule) => cs.assignedFacultyMember)
-    assignedClassSchedules: ClassSchedule[];
+    @OneToMany(
+        (type?: any) => FacultyMemberClassFeedback,
+        (fmcf: FacultyMemberClassFeedback) => fmcf.facultyMember,
+    )
+    classScheduleFeedbacks: FacultyMemberClassFeedback[];
 
     @OneToMany((type?: any) => TimeConstraint, (tc: TimeConstraint) => tc.facultyMember)
     timeConstraints: TimeConstraint[];

@@ -1,7 +1,16 @@
 import { IsNotEmpty } from "class-validator";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    OneToOne,
+    JoinColumn,
+} from "typeorm";
 import { MeetingDays, MeetingHours } from "../enum";
 import { FacultyMember, Subject } from "./";
+import FacultyMemberClassFeedback from "./feedback";
 
 @Entity()
 export default class ClassSchedule extends BaseEntity {
@@ -31,9 +40,14 @@ export default class ClassSchedule extends BaseEntity {
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
 
-    @ManyToOne((type?: any) => FacultyMember, (fm: FacultyMember) => fm.assignedClassSchedules)
-    assignedFacultyMember: FacultyMember;
-
-    @ManyToOne((type?: any) => Subject, (s: Subject) => s.classSchedules)
+    @ManyToOne((type?: any) => Subject, (s: Subject) => s.classSchedules, { onDelete: "CASCADE" })
     subject: Subject;
+
+    @OneToOne(
+        (type?: any) => FacultyMemberClassFeedback,
+        (fmcf: FacultyMemberClassFeedback) => fmcf.classSchedule,
+        { onDelete: "SET NULL" },
+    )
+    @JoinColumn()
+    feedback: FacultyMemberClassFeedback;
 }
