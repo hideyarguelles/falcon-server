@@ -3,6 +3,16 @@ import { IsEmail, IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 import { UserType } from "../enum";
 
+const SALT_ROUNDS = 10;
+
+export interface UserForm {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    passwordIsTemporary: boolean;
+}
+
 @Entity()
 export default class User extends BaseEntity {
     @PrimaryGeneratedColumn()
@@ -28,7 +38,7 @@ export default class User extends BaseEntity {
     authorization: UserType;
 
     @Column()
-    @Index()
+    @Index({ unique: true })
     @IsEmail()
     @IsNotEmpty()
     email: string;
@@ -45,5 +55,27 @@ export default class User extends BaseEntity {
         return this.findOne({
             where: { email },
         });
+    }
+
+    static createFromForm(form: UserForm): Promise<User> {
+        return new Promise((resolve, reject) =>
+            bcrypt.hash(form.password, SALT_ROUNDS, (err, hash) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                const user = User.create({
+                    firstName: form.firstName,
+                    lastName: form.lastName,
+                    passwordIsTemporary: form.passwordIsTemporary,
+                    authorization: UserType.Faculty,
+                    email: form.email,
+                    secret: hash,
+                });
+
+                resolve(user);
+            }),
+        );
     }
 }

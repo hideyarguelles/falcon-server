@@ -14,7 +14,6 @@ import { includeCurrentUser } from "./middleware/include_current_user";
 import { logger } from "./middleware/logging";
 import { apiRouter } from "./routes";
 
-
 // Load environment variables from .env file, where API keys and passwords are configured
 console.log("Loading environmental variables...");
 dotenv.config({ path: ".env" });

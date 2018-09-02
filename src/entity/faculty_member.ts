@@ -23,6 +23,14 @@ import {
 import ClassSchedule from "./class_schedule";
 import FacultyMemberClassFeedback from "./feedback";
 
+export interface FacultyMemberForm {
+    sex: Sex;
+    type: FacultyMemberType;
+    activity: ActivityType;
+    birthDate: string;
+    user: User;
+}
+
 @Entity()
 export default class FacultyMember extends BaseEntity {
     @PrimaryGeneratedColumn()

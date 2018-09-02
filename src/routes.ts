@@ -1,20 +1,23 @@
 import * as Router from "koa-router";
-import { UserController, FacultyController } from "./controller";
-import { UserType } from "./enum";
+import { UserView, FacultyView } from "./view";
 import { nestRouter } from "./utils/nest_router";
+import { boomifyExceptions } from "./middleware/boomify_exceptions";
 
-const apiRouter = new Router();
-apiRouter.prefix("/api");
+const apiRouter = new Router()
+    // All API routes must begin with /api
+    .prefix("/api")
+    // All uncaught API exceptions will be formatted nicely in the response
+    .use(boomifyExceptions());
 
 //
 // ─── User routes ──────────────────────────────────────────────────────────────────────────
 //
 
 const userRouter = new Router()
-    .post("/sign-in", UserController.signIn)
-    .post("/sign-out", UserController.signOut)
-    .post("/set-password", UserController.setPassword)
-    .get("/current-user", UserController.currentUser);
+    .post("/sign-in", UserView.signIn)
+    .post("/sign-out", UserView.signOut)
+    .post("/set-password", UserView.setPassword)
+    .get("/current-user", UserView.currentUser);
 
 //
 // ─── Faculty Routes ─────────────────────────────────────────────────────────────
@@ -23,8 +26,8 @@ const userRouter = new Router()
 const facultyRouter = new Router();
 facultyRouter
     .prefix("/faculty")
-    .get("/", FacultyController.getAllFaculty)
-    .post("/", FacultyController.addFacultyMember);
+    .get("/", FacultyView.getAll)
+    .post("/", FacultyView.add);
 
 //
 // ─── Nesting ───────────────────────────────────────────────────────────────────────────
