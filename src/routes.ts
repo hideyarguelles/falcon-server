@@ -27,7 +27,8 @@ const facultyRouter = new Router();
 facultyRouter
     .prefix("/faculty")
     .get("/", FacultyView.getAll)
-    .post("/", FacultyView.add);
+    .post("/", FacultyView.add)
+    .put("/:id", FacultyView.update);
 
 //
 // ─── Nesting ───────────────────────────────────────────────────────────────────────────

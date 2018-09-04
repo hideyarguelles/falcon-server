@@ -6,7 +6,7 @@ import { UserForm } from "../entity/user";
 
 export default class FacultyController {
     static async getAll(): Promise<FacultyMember[]> {
-        return FacultyMember.find();
+        return FacultyMember.find({ relations: ["user"] });
     }
 
     static async add(
@@ -34,5 +34,39 @@ export default class FacultyController {
         });
 
         return newFacultyMember;
+    }
+
+    static async update(
+        id: number,
+        userForm: UserForm,
+        facultyMemberForm: FacultyMemberForm,
+    ): Promise<FacultyMember | void> {
+        const facultyMember = await FacultyMember.findOne(id, { relations: ["user"] });
+
+        if (!facultyMember) {
+            return undefined;
+        }
+
+        const user = facultyMember.user;
+        Object.assign(user, userForm);
+        const userFormErrors = await validate(user);
+
+        if (userFormErrors.length > 0) {
+            throw userFormErrors;
+        }
+
+        Object.assign(facultyMember, facultyMemberForm);
+        const facultyMemberFormErrors = await validate(facultyMember);
+
+        if (facultyMemberFormErrors.length > 0) {
+            throw facultyMemberFormErrors;
+        }
+
+        await getManager().transaction(async (transactionEM: EntityManager) => {
+            await transactionEM.save(user);
+            await transactionEM.save(facultyMember);
+        });
+
+        return facultyMember;
     }
 }

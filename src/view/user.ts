@@ -10,18 +10,12 @@ export default class UserView {
         const { email, password } = ctx.request.body;
         await UserController.signIn(email, password)
             .then(user => {
+                delete user.secret;
+
                 const token = jwt.sign({ id: user.id }, config.jwtSecret);
                 ctx.cookies.set("token", token, { httpOnly: true });
                 ctx.status = status.OK;
-                ctx.body = {
-                    name: {
-                        first: user.firstName,
-                        last: user.lastName,
-                    },
-                    email: user.email,
-                    authorization: user.authorization,
-                    passwordIsTemporary: user.passwordIsTemporary,
-                };
+                ctx.body = user;
             })
             .catch(handleControllerError(ctx));
     }
@@ -37,15 +31,7 @@ export default class UserView {
     static async currentUser(ctx: Context): Promise<void> {
         const { user } = ctx.state;
         ctx.status = status.OK;
-        ctx.body = {
-            name: {
-                first: user.firstName,
-                last: user.lastName,
-            },
-            email: user.email,
-            authorization: user.authorization,
-            passwordIsTemporary: user.passwordIsTemporary,
-        };
+        ctx.body = user;
     }
 
     static async setPassword(ctx: Context): Promise<void> {}
