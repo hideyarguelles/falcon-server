@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsEnum, IsISO8601, IsNotEmpty } from "class-validator";
 import {
     BaseEntity,
     Column,
@@ -20,7 +20,6 @@ import {
     TimeConstraint,
     User,
 } from "./";
-import ClassSchedule from "./class_schedule";
 import FacultyMemberClassFeedback from "./feedback";
 
 export interface FacultyMemberForm {
@@ -37,15 +36,19 @@ export default class FacultyMember extends BaseEntity {
     id: number;
 
     @Column("enum", { enum: Sex })
+    @IsEnum(Sex)
     sex: Sex;
 
     @Column("enum", { enum: FacultyMemberType })
+    @IsEnum(FacultyMemberType)
     type: FacultyMemberType;
 
     @Column("enum", { enum: ActivityType })
+    @IsEnum(ActivityType)
     activity: ActivityType;
 
     @Column("date")
+    @IsISO8601()
     @IsNotEmpty()
     birthDate: string;
 

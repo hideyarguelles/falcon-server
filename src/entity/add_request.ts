@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { ChangeRequestStatus } from "../enum";
 import {
@@ -15,6 +15,7 @@ class AddRequest extends BaseEntity {
     id: number;
 
     @Column("enum", { enum: ChangeRequestStatus })
+    @IsEnum(ChangeRequestStatus)
     status: ChangeRequestStatus;
 
     @Column({ nullable: true })

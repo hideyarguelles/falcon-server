@@ -1,7 +1,7 @@
-import { IsNotEmpty } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumberString, Max, Min } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../../enum";
 import { FacultyMember } from "..";
+import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../../enum";
 
 @Entity()
 export default class InstructionalMaterial extends BaseEntity {
@@ -13,16 +13,21 @@ export default class InstructionalMaterial extends BaseEntity {
     title: string;
 
     @Column("enum", { enum: InstructionalMaterialMedium })
+    @IsEnum(InstructionalMaterialMedium)
     medium: InstructionalMaterialMedium;
 
     @Column("enum", { enum: InstructionalMaterialAudience })
+    @IsEnum(InstructionalMaterialAudience)
     audience: InstructionalMaterialAudience;
 
     @Column()
     @IsNotEmpty()
+    @IsNumberString()
     usageYear: string;
 
     @Column({ nullable: true })
+    @Min(1)
+    @Max(4)
     level: number;
 
     //

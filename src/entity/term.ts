@@ -2,6 +2,7 @@ import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColu
 import { OrdinalTerm, TermStatus } from "../enum";
 import ClassSchedule from "./class_schedule";
 import TimeConstraint from "./time_constraint";
+import { IsEnum } from "class-validator";
 
 @Entity()
 export default class Term extends BaseEntity {
@@ -12,9 +13,11 @@ export default class Term extends BaseEntity {
     startYear: number;
 
     @Column("enum", { enum: OrdinalTerm })
+    @IsEnum(OrdinalTerm)
     term: OrdinalTerm;
 
     @Column("enum", { enum: TermStatus })
+    @IsEnum(TermStatus)
     status: TermStatus;
 
     //

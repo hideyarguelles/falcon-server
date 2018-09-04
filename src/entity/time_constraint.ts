@@ -1,6 +1,7 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MeetingDays, MeetingHours } from "../enum";
 import { FacultyMember, Term } from "./";
+import { IsEnum } from "class-validator";
 
 @Entity()
 export default class TimeConstraint extends BaseEntity {
@@ -14,9 +15,11 @@ export default class TimeConstraint extends BaseEntity {
     isPreferred: boolean;
 
     @Column("enum", { enum: MeetingDays })
+    @IsEnum(MeetingDays)
     meetingDays: MeetingDays;
 
     @Column("enum", { enum: MeetingHours })
+    @IsEnum(MeetingHours)
     meetingHours: MeetingHours;
 
     //

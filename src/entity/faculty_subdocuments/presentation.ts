@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { PresentationCategory, PresentationMedium } from "../../enum";
 import { FacultyMember } from "..";
@@ -13,6 +13,7 @@ export default class Presentation extends BaseEntity {
     title: string;
 
     @Column("enum", { enum: PresentationCategory })
+    @IsEnum(PresentationCategory)
     category: PresentationCategory;
 
     @Column()
@@ -32,6 +33,7 @@ export default class Presentation extends BaseEntity {
     conference: string;
 
     @Column("enum", { enum: PresentationMedium })
+    @IsEnum(PresentationMedium)
     medium: PresentationMedium;
 
     @Column()

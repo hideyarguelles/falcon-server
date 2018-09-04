@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsEnum } from "class-validator";
 import {
     BaseEntity,
     Column,
@@ -17,9 +17,11 @@ export default class ClassSchedule extends BaseEntity {
     id: number;
 
     @Column("enum", { enum: MeetingDays })
+    @IsEnum(MeetingDays)
     meetingDays: MeetingDays;
 
     @Column("enum", { enum: MeetingHours })
+    @IsEnum(MeetingHours)
     meetingHours: MeetingHours;
 
     @Column()

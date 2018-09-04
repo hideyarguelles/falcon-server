@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { SubjectCategory } from "../enum";
 import { FacultyMember } from "./";
@@ -22,6 +22,7 @@ export default class Subject extends BaseEntity {
     description: string;
 
     @Column("enum", { enum: SubjectCategory })
+    @IsEnum(SubjectCategory)
     category: SubjectCategory;
 
     //

@@ -1,5 +1,5 @@
 import * as bcrypt from "bcryptjs";
-import { IsEmail, IsNotEmpty } from "class-validator";
+import { IsEmail, IsNotEmpty, IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 import { UserType } from "../enum";
 
@@ -35,6 +35,7 @@ export default class User extends BaseEntity {
     passwordIsTemporary: boolean;
 
     @Column("enum", { enum: UserType })
+    @IsEnum(UserType)
     authorization: UserType;
 
     @Column()

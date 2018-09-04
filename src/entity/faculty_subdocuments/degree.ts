@@ -1,7 +1,7 @@
-import { IsNotEmpty } from "class-validator";
+import { IsEnum, IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { DegreeLevel } from "../../enum";
 import { FacultyMember } from "..";
+import { DegreeLevel } from "../../enum";
 
 @Entity()
 export default class Degree extends BaseEntity {
@@ -13,6 +13,7 @@ export default class Degree extends BaseEntity {
     title: string;
 
     @Column("enum", { enum: DegreeLevel })
+    @IsEnum(DegreeLevel)
     level: DegreeLevel;
 
     @Column()

@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsArray, ArrayUnique } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ExtensionWorkRole } from "../../enum";
 import { FacultyMember } from "..";
@@ -13,6 +13,8 @@ export default class ExtensionWork extends BaseEntity {
     title: string;
 
     @Column("enum", { enum: ExtensionWorkRole, array: true })
+    @ArrayUnique()
+    @IsArray()
     roles: ExtensionWorkRole[];
 
     @Column()

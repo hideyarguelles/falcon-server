@@ -2,6 +2,7 @@ import { BaseEntity, Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn
 import { FeedbackStatus } from "../enum";
 import { FacultyMember } from "./";
 import ClassSchedule from "./class_schedule";
+import { IsEnum } from "class-validator";
 
 @Entity()
 export default class FacultyMemberClassFeedback extends BaseEntity {
@@ -9,6 +10,7 @@ export default class FacultyMemberClassFeedback extends BaseEntity {
     id: number;
 
     @Column("enum", { enum: FeedbackStatus })
+    @IsEnum(FeedbackStatus)
     status: FeedbackStatus;
 
     //

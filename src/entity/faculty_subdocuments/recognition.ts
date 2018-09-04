@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsEnum, IsISO8601 } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { RecognitionBasis } from "../../enum";
 import { FacultyMember } from "..";
@@ -13,10 +13,12 @@ export default class Recognition extends BaseEntity {
     title: string;
 
     @Column("enum", { enum: RecognitionBasis })
+    @IsEnum(RecognitionBasis)
     basis: RecognitionBasis;
 
     @Column()
     @IsNotEmpty()
+    @IsISO8601()
     date: string;
 
     @Column()
