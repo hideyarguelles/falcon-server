@@ -26,8 +26,7 @@ export default class User extends BaseEntity {
     @IsNotEmpty()
     lastName: string;
 
-    @Column()
-    @IsNotEmpty()
+    @Column({ select: false })
     secret: string;
 
     @Column()
@@ -54,6 +53,15 @@ export default class User extends BaseEntity {
 
     static findByEmail(email: string): Promise<User | undefined> {
         return this.findOne({
+            select: [
+                "id",
+                "firstName",
+                "lastName",
+                "secret",
+                "passwordIsTemporary",
+                "authorization",
+                "email",
+            ],
             where: { email },
         });
     }
