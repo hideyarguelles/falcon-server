@@ -25,7 +25,17 @@ export const includeCurrentUser = (): Middleware => {
             return;
         }
 
-        const user = await User.findOne({ where: { id } });
+        const user = await User.findOne({
+            select: [
+                "id",
+                "firstName",
+                "lastName",
+                "passwordIsTemporary",
+                "authorization",
+                "email",
+            ],
+            where: { id },
+        });
         if (!user) {
             setContextBoom(ctx, Boom.badRequest("User not found"));
             ctx.cookies.set("token"); // Remove invalid token

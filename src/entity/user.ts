@@ -29,11 +29,11 @@ export default class User extends BaseEntity {
     @Column({ select: false })
     secret: string;
 
-    @Column()
+    @Column({ select: false })
     @IsNotEmpty()
     passwordIsTemporary: boolean;
 
-    @Column("enum", { enum: UserType })
+    @Column("enum", { enum: UserType, select: false })
     @IsEnum(UserType)
     authorization: UserType;
 
