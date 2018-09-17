@@ -6,7 +6,16 @@ import { UserForm } from "../entity/user";
 
 export default class FacultyController {
     static async getAll(): Promise<FacultyMember[]> {
-        return FacultyMember.find({ relations: ["user"] });
+        return FacultyMember.find({
+            relations: [
+                "user",
+                "presentations",
+                "recognitions",
+                "instructionalMaterials",
+                "extensionWorks",
+                "degrees",
+            ],
+        });
     }
 
     static async add(
