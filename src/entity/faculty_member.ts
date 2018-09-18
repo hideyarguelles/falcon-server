@@ -8,6 +8,7 @@ import {
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
+    JoinTable,
 } from "typeorm";
 import { ActivityType, FacultyMemberType, Sex } from "../enum";
 import {
@@ -63,6 +64,7 @@ export default class FacultyMember extends BaseEntity {
     user: User;
 
     @ManyToMany((type?: any) => Subject, (s: Subject) => s.specializedFaculty)
+    @JoinTable()
     specializedSubjects: Subject[];
 
     @OneToMany(
