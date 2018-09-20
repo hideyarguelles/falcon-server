@@ -1,8 +1,9 @@
 import { Context } from "koa";
 import { User } from "../entity";
+import Controller from "../interfaces/controller";
 
-export default class UserController {
-    static async signIn(email: string, password: string): Promise<User> {
+export default class UserController implements Controller {
+    async signIn(email: string, password: string): Promise<User> {
         if (!email || !password) {
             throw new Error("email and password is required");
         }
@@ -17,5 +18,5 @@ export default class UserController {
         return user;
     }
 
-    static async setPassword(ctx: Context): Promise<void> {}
+    async setPassword(ctx: Context): Promise<void> {}
 }

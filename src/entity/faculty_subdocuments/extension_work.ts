@@ -1,7 +1,9 @@
 import { IsNotEmpty, IsArray, ArrayUnique } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ExtensionWorkRole } from "../../enum";
-import { FacultyMember } from "..";
+import FacultyMember from "../faculty_member";
+
+export interface ExtensionWorkForm {}
 
 @Entity()
 export default class ExtensionWork extends BaseEntity {

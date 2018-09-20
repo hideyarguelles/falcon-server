@@ -1,2 +1,2 @@
-export { default as FacultyController } from "./faculty";
+export { default as FacultyMemberController } from "./faculty_member";
 export { default as UserController } from "./user";

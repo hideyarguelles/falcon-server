@@ -3,13 +3,20 @@ import { UserType } from "../enum";
 import { Context } from "koa";
 import * as status from "http-status-codes";
 
+type ViewNext = () => Promise<any>;
+type ViewFunction = (Context, ViewNext?) => any;
+
 export const requireAuthorization = (allowed: UserType[]) => (
     target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor,
+    descriptor?: TypedPropertyDescriptor<ViewFunction>,
 ) => {
+    if (!descriptor) {
+        return;
+    }
+
     const route = descriptor.value;
-    descriptor.value = async (ctx: Context, next: () => Promise<any>) => {
+    descriptor.value = async (ctx: Context, next?: ViewNext) => {
         const user: User = ctx.state.user;
 
         const isGuestAndAllowed = !user && allowed.includes(UserType.Guest);

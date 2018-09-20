@@ -1,7 +1,9 @@
 import { IsEnum, IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { FacultyMember } from "..";
 import { DegreeLevel } from "../../enum";
+import FacultyMember from "../faculty_member";
+
+export interface DegreeForm {}
 
 @Entity()
 export default class Degree extends BaseEntity {

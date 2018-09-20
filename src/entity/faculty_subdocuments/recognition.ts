@@ -1,7 +1,9 @@
 import { IsNotEmpty, IsEnum, IsISO8601 } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { RecognitionBasis } from "../../enum";
-import { FacultyMember } from "..";
+import FacultyMember from "../faculty_member";
+
+export interface RecognitionForm {}
 
 @Entity()
 export default class Recognition extends BaseEntity {

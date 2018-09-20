@@ -4,11 +4,13 @@ import { Context } from "koa";
 import { config } from "../config";
 import { UserController } from "../controller";
 import { handleControllerError } from "../utils/handle_controller_error";
+import View from "../interfaces/view";
 
-export default class UserView {
-    static async signIn(ctx: Context): Promise<void> {
+export default class UserView extends View<UserController> {
+    signIn = async (ctx: Context): Promise<void> => {
         const { email, password } = ctx.request.body;
-        await UserController.signIn(email, password)
+        await this.controller
+            .signIn(email, password)
             .then(user => {
                 delete user.secret;
 
@@ -18,21 +20,21 @@ export default class UserView {
                 ctx.body = user;
             })
             .catch(handleControllerError(ctx));
-    }
+    };
 
-    static async signOut(ctx: Context): Promise<void> {
+    signOut = async (ctx: Context): Promise<void> => {
         ctx.status = status.OK;
         ctx.cookies.set("token");
         ctx.body = {
             message: "Sign out success",
         };
-    }
+    };
 
-    static async currentUser(ctx: Context): Promise<void> {
+    currentUser = async (ctx: Context): Promise<void> => {
         const { user } = ctx.state;
         ctx.status = status.OK;
         ctx.body = user;
-    }
+    };
 
-    static async setPassword(ctx: Context): Promise<void> {}
+    setPassword = async (ctx: Context): Promise<void> => {};
 }
