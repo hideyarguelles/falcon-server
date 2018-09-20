@@ -4,6 +4,8 @@ import { SubjectCategory } from "../enum";
 import Program from "../enum/program";
 import ClassSchedule from "./class_schedule";
 
+export default interface SubjectForm {}
+
 @Entity()
 export default class Subject extends BaseEntity {
     @PrimaryGeneratedColumn()
