@@ -6,7 +6,7 @@ import * as status from "http-status-codes";
 type ViewNext = () => Promise<any>;
 type ViewFunction = (Context, ViewNext?) => any;
 
-export const requireAuthorization = (allowed: UserType[]) => (
+export const RequireAuthorization = (allowed: UserType[]) => (
     target: any,
     propertyKey: string,
     descriptor?: TypedPropertyDescriptor<ViewFunction>,
