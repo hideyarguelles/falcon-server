@@ -70,7 +70,7 @@ export default class FacultyMemberController implements Controller {
         id: number,
         userForm: UserForm,
         facultyMemberForm: FacultyMemberForm,
-    ): Promise<FacultyMember | void> {
+    ): Promise<FacultyMember> {
         const facultyMember = await this.findById(id, { relations: ["user"] });
         const user = facultyMember.user;
         Object.assign(user, userForm);
