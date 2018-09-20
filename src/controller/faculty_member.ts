@@ -38,7 +38,6 @@ export default class FacultyMemberController implements Controller {
                 "instructionalMaterials",
                 "extensionWorks",
                 "degrees",
-                "specializedSubjects",
             ],
         });
     }

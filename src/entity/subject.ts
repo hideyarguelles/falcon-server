@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsEnum } from "class-validator";
-import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { IsEnum, IsNotEmpty } from "class-validator";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { SubjectCategory } from "../enum";
-import { FacultyMember } from "./";
+import Program from "../enum/program";
 import ClassSchedule from "./class_schedule";
 
 @Entity()
@@ -25,12 +25,13 @@ export default class Subject extends BaseEntity {
     @IsEnum(SubjectCategory)
     category: SubjectCategory;
 
+    @Column("enum", { enum: Program })
+    @IsEnum(Program)
+    program: Program;
+
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
-
-    @ManyToMany((type?: any) => FacultyMember, (fm: FacultyMember) => fm.specializedSubjects)
-    specializedFaculty: FacultyMember[];
 
     @OneToMany((type?: any) => ClassSchedule, (cs: ClassSchedule) => cs.subject)
     classSchedules: ClassSchedule[];

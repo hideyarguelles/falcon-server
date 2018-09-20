@@ -63,10 +63,6 @@ export default class FacultyMember extends BaseEntity {
     @JoinColumn()
     user: User;
 
-    @ManyToMany((type?: any) => Subject, (s: Subject) => s.specializedFaculty)
-    @JoinTable()
-    specializedSubjects: Subject[];
-
     @OneToMany(
         (type?: any) => FacultyMemberClassFeedback,
         (fmcf: FacultyMemberClassFeedback) => fmcf.facultyMember,
