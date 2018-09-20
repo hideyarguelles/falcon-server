@@ -1,19 +1,13 @@
-import { IsNotEmpty, IsEnum, IsISO8601 } from "class-validator";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { IsEnum, IsISO8601, IsNotEmpty } from "class-validator";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { RecognitionBasis } from "../../enum";
+import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 
 export interface RecognitionForm {}
 
 @Entity()
-export default class Recognition extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    @Column()
-    @IsNotEmpty()
-    title: string;
-
+export default class Recognition extends FacultyMemberSubdocumentEntity {
     @Column("enum", { enum: RecognitionBasis })
     @IsEnum(RecognitionBasis)
     basis: RecognitionBasis;

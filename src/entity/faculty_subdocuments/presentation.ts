@@ -1,19 +1,13 @@
-import { IsNotEmpty, IsEnum } from "class-validator";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { IsEnum, IsNotEmpty } from "class-validator";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { PresentationCategory, PresentationMedium } from "../../enum";
+import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 
 export interface PresentationForm {}
 
 @Entity()
-export default class Presentation extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    @Column()
-    @IsNotEmpty()
-    title: string;
-
+export default class Presentation extends FacultyMemberSubdocumentEntity {
     @Column("enum", { enum: PresentationCategory })
     @IsEnum(PresentationCategory)
     category: PresentationCategory;
