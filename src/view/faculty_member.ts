@@ -24,7 +24,8 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
     @requireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     get = async (ctx: Context): Promise<void> => {
         const { id } = ctx.params;
-        await this.get(id)
+        await this.controller
+            .get(id)
             .then(facultyMember => {
                 ctx.status = status.OK;
                 ctx.body = facultyMember;
