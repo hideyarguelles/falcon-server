@@ -1,7 +1,7 @@
 import { validate } from "class-validator";
 import { FindOneOptions } from "typeorm";
-import { Subject } from "../entity";
-import SubjectForm from "../entity/subject";
+import { Subject } from "../entities";
+import SubjectForm from "../entities/subject";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";

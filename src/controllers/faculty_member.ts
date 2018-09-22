@@ -1,8 +1,8 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager } from "typeorm";
-import { FacultyMember, User } from "../entity";
-import { FacultyMemberForm } from "../entity/faculty_member";
-import { UserForm } from "../entity/user";
+import { FacultyMember, User } from "../entities";
+import { FacultyMemberForm } from "../entities/faculty_member";
+import { UserForm } from "../entities/user";
 import EntityNotFoundError from "../errors/not_found";
 import Controller from "../interfaces/controller";
 import {

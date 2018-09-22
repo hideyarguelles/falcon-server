@@ -2,7 +2,7 @@ import * as Boom from "boom";
 import * as jwt from "jsonwebtoken";
 import * as Koa from "koa";
 import * as unless from "koa-unless";
-import { User } from "../entity";
+import { User } from "../entities";
 import { setContextBoom } from "../utils/set_context_boom";
 
 interface AppToken {

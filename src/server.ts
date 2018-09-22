@@ -9,7 +9,7 @@ import "reflect-metadata";
 import { createConnection } from "typeorm";
 import * as winston from "winston";
 import { config } from "./config";
-import * as entities from "./entity";
+import * as entities from "./entities";
 import { includeCurrentUser } from "./middleware/include_current_user";
 import { logger } from "./middleware/logging";
 import apiRouter from "./routes";

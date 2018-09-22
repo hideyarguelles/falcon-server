@@ -1,5 +1,5 @@
 import { Context } from "koa";
-import { User } from "../entity";
+import { User } from "../entities";
 import Controller from "../interfaces/controller";
 
 export default class UserController implements Controller {

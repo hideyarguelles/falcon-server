@@ -1,7 +1,7 @@
 import * as status from "http-status-codes";
 import { Context } from "koa";
 import SubjectController from "../controllers/subject";
-import SubjectForm from "../entity/subject";
+import SubjectForm from "../entities/subject";
 import { UserType } from "../enum";
 import View from "../interfaces/view";
 import { handleControllerError } from "../utils/handle_controller_error";
