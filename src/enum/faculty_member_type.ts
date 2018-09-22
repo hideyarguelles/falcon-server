@@ -1,7 +1,8 @@
 enum FacultyMemberType {
-    Regular = "Regular",
-    Professor = "Professor",
-    Administrator = "Administrator",
+    Instructor = "Instructor",
+    AssistantProfessor = "AssistantProfessor",
+    AssociateProfessor = "AssociateProfessor",
+    FullProfessor = "FullProfessor",
     PartTime = "PartTime",
     Adjunct = "Adjunct",
 }
