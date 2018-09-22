@@ -10,7 +10,7 @@ import {
     PrimaryGeneratedColumn,
     JoinTable,
 } from "typeorm";
-import { ActivityType, FacultyMemberType, Sex } from "../enum";
+import { ActivityType, FacultyMemberType, Sex } from "../enums";
 import {
     Degree,
     ExtensionWork,

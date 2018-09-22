@@ -8,7 +8,7 @@ import {
     OneToOne,
     PrimaryGeneratedColumn,
 } from "typeorm";
-import { MeetingDays, MeetingHours } from "../enum";
+import { MeetingDays, MeetingHours } from "../enums";
 import { Subject, Term, FacultyMemberClassFeedback } from "./";
 
 @Entity()

@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { ChangeRequestStatus } from "../enum";
+import { ChangeRequestStatus } from "../enums";
 import {
     Degree,
     ExtensionWork,

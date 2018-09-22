@@ -1,6 +1,6 @@
 import { ArrayUnique, IsArray, IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, PrimaryGeneratedColumn } from "typeorm";
-import Program from "../enum/program";
+import Program from "../enums/program";
 import IsEnumArray from "../utils/is_enum_array";
 
 export default abstract class FacultyMemberSubdocumentEntity extends BaseEntity {

@@ -1,6 +1,6 @@
 import { ArrayUnique, IsArray, IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ExtensionWorkRole } from "../../enum";
+import { ExtensionWorkRole } from "../../enums";
 import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import IsEnumArray from "../../utils/is_enum_array";
 import FacultyMember from "../faculty_member";

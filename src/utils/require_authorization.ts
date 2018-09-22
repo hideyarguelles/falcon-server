@@ -1,5 +1,5 @@
 import { User } from "../entities";
-import { UserType } from "../enum";
+import { UserType } from "../enums";
 import { Context } from "koa";
 import * as status from "http-status-codes";
 

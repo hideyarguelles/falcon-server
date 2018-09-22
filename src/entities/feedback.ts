@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { FeedbackStatus } from "../enum";
+import { FeedbackStatus } from "../enums";
 import { FacultyMember } from "./";
 import ClassSchedule from "./class_schedule";
 import { IsEnum } from "class-validator";

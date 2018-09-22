@@ -1,6 +1,6 @@
 import { IsEnum, IsISO8601, IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { RecognitionBasis } from "../../enum";
+import { RecognitionBasis } from "../../enums";
 import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 

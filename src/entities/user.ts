@@ -1,7 +1,7 @@
 import * as bcrypt from "bcryptjs";
 import { IsEmail, IsNotEmpty, IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
-import { UserType } from "../enum";
+import { UserType } from "../enums";
 
 const SALT_ROUNDS = 10;
 

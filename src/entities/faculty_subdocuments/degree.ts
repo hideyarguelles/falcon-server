@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne } from "typeorm";
-import { DegreeLevel } from "../../enum";
+import { DegreeLevel } from "../../enums";
 import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 

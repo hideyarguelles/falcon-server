@@ -1,6 +1,6 @@
 import { Context } from "koa";
 import { DegreeController } from "../controllers/faculty_subdocuments";
-import { UserType } from "../enum";
+import { UserType } from "../enums";
 import View from "../interfaces/view";
 import { RequireAuthorization } from "../utils/require_authorization";
 

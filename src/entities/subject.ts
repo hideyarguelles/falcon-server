@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { SubjectCategory } from "../enum";
-import Program from "../enum/program";
+import { SubjectCategory } from "../enums";
+import Program from "../enums/program";
 import ClassSchedule from "./class_schedule";
 
 export default interface SubjectForm {}

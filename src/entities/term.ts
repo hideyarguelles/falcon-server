@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { OrdinalTerm, TermStatus } from "../enum";
+import { OrdinalTerm, TermStatus } from "../enums";
 import ClassSchedule from "./class_schedule";
 import TimeConstraint from "./time_constraint";
 import { IsEnum } from "class-validator";

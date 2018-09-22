@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { MeetingDays, MeetingHours } from "../enum";
+import { MeetingDays, MeetingHours } from "../enums";
 import { FacultyMember, Term } from "./";
 import { IsEnum } from "class-validator";
 

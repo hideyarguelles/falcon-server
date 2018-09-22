@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { PresentationCategory, PresentationMedium } from "../../enum";
+import { PresentationCategory, PresentationMedium } from "../../enums";
 import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 
