@@ -12,7 +12,7 @@ import { config } from "./config";
 import * as entities from "./entity";
 import { includeCurrentUser } from "./middleware/include_current_user";
 import { logger } from "./middleware/logging";
-import { apiRouter } from "./routes";
+import apiRouter from "./routes";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 console.log("Loading environmental variables...");
@@ -24,9 +24,8 @@ const connectionOptions = PostgressConnectionStringParser.parse(config.databaseU
 const UNPROTECTED_PATHS = ["/api/sign-in"];
 
 const onDatabaseConnect = async () => {
-    const app = new Koa();
-
-    app
+    console.log("Database successfully connected.");
+    new Koa()
         // Provides important security headers to make your app more secure
         .use(helmet())
 
@@ -50,7 +49,7 @@ const onDatabaseConnect = async () => {
         .use(apiRouter.routes())
         .listen(config.port);
 
-    console.log(`Server running on port ${config.port}`);
+    console.log(`Server listening at port ${config.port}`);
 };
 
 console.log("Connecting to the database...");

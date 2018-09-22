@@ -1,6 +1,6 @@
 import * as status from "http-status-codes";
 import { Context } from "koa";
-import SubjectController from "../controller/subject";
+import SubjectController from "../controllers/subject";
 import SubjectForm from "../entity/subject";
 import { UserType } from "../enum";
 import View from "../interfaces/view";

@@ -1,7 +1,7 @@
 import * as Boom from "boom";
 import * as status from "http-status-codes";
 import { Context } from "koa";
-import { FacultyMemberController } from "../controller";
+import { FacultyMemberController } from "../controllers";
 import { UserType } from "../enum";
 import View from "../interfaces/view";
 import { handleControllerError } from "../utils/handle_controller_error";

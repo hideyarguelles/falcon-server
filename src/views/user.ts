@@ -2,7 +2,7 @@ import * as status from "http-status-codes";
 import * as jwt from "jsonwebtoken";
 import { Context } from "koa";
 import { config } from "../config";
-import { UserController } from "../controller";
+import UserController from "../controllers/user";
 import { handleControllerError } from "../utils/handle_controller_error";
 import View from "../interfaces/view";
 

@@ -18,7 +18,6 @@ const apiRouter = new Router()
     // All uncaught API exceptions will be formatted nicely in the response
     .use(boomifyExceptions());
 
-nestRouter(apiRouter, [
-    userRouter, 
-    facultyMemberRouter,
-]);
+nestRouter(apiRouter, [userRouter, facultyMemberRouter]);
+nestRouter(rootRouter, apiRouter);
+export default rootRouter;
