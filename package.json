@@ -37,7 +37,7 @@
     "heroku",
     "cors"
   ],
-  "repository": "github:javieraviles/node-typescript-koa-rest",
+  "repository": "github:skeithtan/falcon-server",
   "devDependencies": {
     "@types/bcryptjs": "^2.4.1",
     "@types/boom": "^7.2.0",
