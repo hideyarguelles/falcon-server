@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumberString, Max, Min } from "class-validator";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../../enums";
 import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";

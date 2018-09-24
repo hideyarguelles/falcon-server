@@ -10,7 +10,6 @@ export interface UserForm {
     lastName: string;
     email: string;
     password: string;
-    passwordIsTemporary: boolean;
 }
 
 @Entity()
@@ -77,7 +76,7 @@ export default class User extends BaseEntity {
                 const user = User.create({
                     firstName: form.firstName,
                     lastName: form.lastName,
-                    passwordIsTemporary: form.passwordIsTemporary,
+                    passwordIsTemporary: true,
                     authorization: UserType.Faculty,
                     email: form.email,
                     secret: hash,

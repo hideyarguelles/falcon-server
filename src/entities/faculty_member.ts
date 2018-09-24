@@ -4,11 +4,9 @@ import {
     Column,
     Entity,
     JoinColumn,
-    ManyToMany,
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
-    JoinTable,
 } from "typeorm";
 import { ActivityType, FacultyMemberType, Sex } from "../enums";
 import {
@@ -17,7 +15,6 @@ import {
     InstructionalMaterial,
     Presentation,
     Recognition,
-    Subject,
     TimeConstraint,
     User,
 } from "./";
