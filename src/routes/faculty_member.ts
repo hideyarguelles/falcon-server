@@ -4,7 +4,7 @@ import { FacultyMemberController } from "../controllers";
 
 const facultyMemberView = new FacultyMemberView(new FacultyMemberController());
 export default new Router()
-    .prefix("/faculty")
+    .prefix("/faculty-members")
     .get("/", facultyMemberView.getAll)
     .post("/", facultyMemberView.add)
     .get("/:id", facultyMemberView.get)
