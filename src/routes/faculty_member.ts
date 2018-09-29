@@ -1,6 +1,6 @@
 import * as Router from "koa-router";
-import { FacultyMemberView } from "../views";
-import { FacultyMemberController } from "../controllers";
+import FacultyMemberController from "../controllers/faculty_member";
+import FacultyMemberView from "../views/faculty_member";
 
 const facultyMemberView = new FacultyMemberView(new FacultyMemberController());
 export default new Router()

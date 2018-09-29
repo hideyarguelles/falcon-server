@@ -1,6 +1,6 @@
 import * as Router from "koa-router";
-import { UserController } from "../controllers";
-import { UserView } from "../views";
+import UserController from "../controllers/user";
+import UserView from "../views/user";
 
 const userView = new UserView(new UserController());
 export default new Router()
