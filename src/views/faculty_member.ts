@@ -43,6 +43,7 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
             type: form.type,
             activity: form.activity,
             birthDate: form.birthDate,
+            pnuId: form.pnuId,
         };
 
         await this.controller.add(userForm, facultyMemberForm).then(facultyMember => {
