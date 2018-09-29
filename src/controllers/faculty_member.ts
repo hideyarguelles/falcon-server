@@ -19,7 +19,9 @@ export default class FacultyMemberController implements Controller {
     }
 
     async getAll(): Promise<FacultyMember[]> {
-        return FacultyMember.find();
+        return FacultyMember.find({
+            relations: ["user"],
+        });
     }
 
     async get(id: number): Promise<FacultyMember> {
