@@ -10,8 +10,8 @@ import { createConnection } from "typeorm";
 import * as winston from "winston";
 import { config } from "./config";
 import * as entities from "./entities";
-import { includeCurrentUser } from "./middleware/include_current_user";
-import { logger } from "./middleware/logging";
+import { includeCurrentUser } from "./middlewares/include_current_user";
+import { logger } from "./middlewares/logging";
 import apiRouter from "./routes";
 
 // Load environment variables from .env file, where API keys and passwords are configured

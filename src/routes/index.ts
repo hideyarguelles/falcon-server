@@ -1,7 +1,7 @@
 import * as status from "http-status-codes";
 import { Context } from "koa";
 import * as Router from "koa-router";
-import { catchResponseError } from "../middleware/catch_response_error";
+import { catchResponseError } from "../middlewares/catch_response_error";
 import { nestRouter } from "../utils/nest_router";
 import facultyMemberRouter from "./faculty_member";
 import subdocumentRouter from "./faculty_subdocuments";
