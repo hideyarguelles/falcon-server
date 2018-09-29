@@ -7,4 +7,5 @@ export interface FacultyMemberForm {
     activity: ActivityType;
     birthDate: string;
     user?: User;
+    pnuId: string;
 }
