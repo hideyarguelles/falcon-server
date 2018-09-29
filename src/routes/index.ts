@@ -7,6 +7,13 @@ import facultyMemberRouter from "./faculty_member";
 import subdocumentRouter from "./faculty_subdocuments";
 import userRouter from "./user";
 
+const API_CHILD_ROUTERS = [
+    // List all routes under /api here
+    userRouter,
+    facultyMemberRouter,
+    subdocumentRouter,
+];
+
 // Always return OK at /
 const rootRouter = new Router();
 rootRouter.all("/", async (ctx: Context) => {
@@ -19,6 +26,6 @@ const apiRouter = new Router()
     // All uncaught API exceptions will be formatted nicely in the response
     .use(catchResponseError());
 
-nestRouter(apiRouter, [userRouter, facultyMemberRouter, subdocumentRouter]);
+nestRouter(apiRouter, API_CHILD_ROUTERS);
 nestRouter(rootRouter, apiRouter);
 export default rootRouter;
