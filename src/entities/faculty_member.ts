@@ -1,4 +1,4 @@
-import { IsEnum, IsISO8601, IsNotEmpty } from "class-validator";
+import { IsEnum, IsISO8601, IsNotEmpty, IsNumber, Length } from "class-validator";
 import {
     BaseEntity,
     Column,
@@ -41,6 +41,11 @@ export default class FacultyMember extends BaseEntity {
     @IsISO8601()
     @IsNotEmpty()
     birthDate: string;
+
+    @Column()
+    @IsNumber()
+    @Length(3, 3)
+    pnuId: string;
 
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
