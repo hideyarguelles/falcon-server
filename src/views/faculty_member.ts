@@ -2,6 +2,8 @@ import * as Boom from "boom";
 import * as status from "http-status-codes";
 import { Context } from "koa";
 import { FacultyMemberController } from "../controllers";
+import { FacultyMemberForm } from "../entities/forms/faculty_member";
+import { UserForm } from "../entities/forms/user";
 import { UserType } from "../enums";
 import View from "../interfaces/view";
 import { RequireAuthorization } from "../utils/require_authorization";
@@ -27,7 +29,22 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
 
     @RequireAuthorization([UserType.Clerk])
     add = async (ctx: Context): Promise<void> => {
-        const { user: userForm, faculty: facultyMemberForm } = ctx.request.body;
+        const form = ctx.request.body;
+
+        const userForm: UserForm = {
+            firstName: form.firstName,
+            lastName: form.lastName,
+            email: form.email,
+            password: form.password,
+        };
+
+        const facultyMemberForm: FacultyMemberForm = {
+            sex: form.sex,
+            type: form.type,
+            activity: form.activity,
+            birthDate: form.birthDate,
+        };
+
         await this.controller.add(userForm, facultyMemberForm).then(facultyMember => {
             delete facultyMember.user.secret;
 

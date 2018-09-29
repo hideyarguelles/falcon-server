@@ -6,5 +6,5 @@ export interface FacultyMemberForm {
     type: FacultyMemberType;
     activity: ActivityType;
     birthDate: string;
-    user: User;
+    user?: User;
 }
