@@ -1,29 +1,24 @@
 import { validate } from "class-validator";
 import { BaseEntity } from "typeorm";
-import { Degree, ExtensionWork, InstructionalMaterial, Presentation, Recognition } from "../entities";
-import FacultyMember from "../entities/faculty_member";
+import { Degree, ExtensionWork, FacultyMember, InstructionalMaterial, Presentation, Recognition } from "../entities";
 import { DegreeForm } from "../entities/faculty_subdocuments/degree";
 import { ExtensionWorkForm } from "../entities/faculty_subdocuments/extension_work";
 import { InstructionalMaterialForm } from "../entities/faculty_subdocuments/instructional_material";
 import { PresentationForm } from "../entities/faculty_subdocuments/presentation";
 import { RecognitionForm } from "../entities/faculty_subdocuments/recognition";
 import EntityNotFoundError from "../errors/not_found";
-import Controller from "../interfaces/controller";
 import ValidationFailError from "../errors/validation_fail_error";
+import Controller from "../interfaces/controller";
+import FacultyMemberController from "./faculty_member";
 
-export abstract class FacultyMemberSubdocumentControler<S extends BaseEntity, F>
+export abstract class FacultySubdocumentController<S extends BaseEntity, F>
     implements Controller {
-    facultyMember: FacultyMember;
-
-    constructor(parent: FacultyMember) {
-        this.facultyMember = parent;
-    }
-
-    abstract getSubdocumentCollection(): S[];
+    abstract getSubdocumentCollection(fm: FacultyMember): S[];
     abstract createFromForm(form: F): S;
     abstract async findById(id: number): Promise<S>;
 
-    async add(form: F): Promise<S> {
+    async add(facultyId: number, form: F): Promise<S> {
+        const facultyMember = await new FacultyMemberController().get(facultyId);
         const entity: S = this.createFromForm(form);
         const formErrors = await validate(entity);
 
@@ -31,9 +26,9 @@ export abstract class FacultyMemberSubdocumentControler<S extends BaseEntity, F>
             throw new ValidationFailError(formErrors);
         }
 
-        const collection = this.getSubdocumentCollection();
+        const collection = this.getSubdocumentCollection(facultyMember);
         collection.push(entity);
-        await this.facultyMember.save();
+        await facultyMember.save();
 
         return entity;
     }
@@ -57,9 +52,9 @@ export abstract class FacultyMemberSubdocumentControler<S extends BaseEntity, F>
     }
 }
 
-export class DegreeController extends FacultyMemberSubdocumentControler<Degree, DegreeForm> {
-    getSubdocumentCollection(): Degree[] {
-        return this.facultyMember.degrees;
+export class DegreeController extends FacultySubdocumentController<Degree, DegreeForm> {
+    getSubdocumentCollection(fm: FacultyMember): Degree[] {
+        return fm.degrees;
     }
 
     createFromForm(form: DegreeForm): Degree {
@@ -75,12 +70,12 @@ export class DegreeController extends FacultyMemberSubdocumentControler<Degree, 
     }
 }
 
-export class RecognitionController extends FacultyMemberSubdocumentControler<
+export class RecognitionController extends FacultySubdocumentController<
     Recognition,
     RecognitionForm
 > {
-    getSubdocumentCollection(): Recognition[] {
-        return this.facultyMember.recognitions;
+    getSubdocumentCollection(fm: FacultyMember): Recognition[] {
+        return fm.recognitions;
     }
 
     createFromForm(form: RecognitionForm): Recognition {
@@ -96,12 +91,12 @@ export class RecognitionController extends FacultyMemberSubdocumentControler<
     }
 }
 
-export class InstructionalMaterialController extends FacultyMemberSubdocumentControler<
+export class InstructionalMaterialController extends FacultySubdocumentController<
     InstructionalMaterial,
     InstructionalMaterialForm
 > {
-    getSubdocumentCollection(): InstructionalMaterial[] {
-        return this.facultyMember.instructionalMaterials;
+    getSubdocumentCollection(fm: FacultyMember): InstructionalMaterial[] {
+        return fm.instructionalMaterials;
     }
 
     createFromForm(form: InstructionalMaterialForm): InstructionalMaterial {
@@ -117,12 +112,12 @@ export class InstructionalMaterialController extends FacultyMemberSubdocumentCon
     }
 }
 
-export class PresentationController extends FacultyMemberSubdocumentControler<
+export class PresentationController extends FacultySubdocumentController<
     Presentation,
     PresentationForm
 > {
-    getSubdocumentCollection(): Presentation[] {
-        return this.facultyMember.presentations;
+    getSubdocumentCollection(fm: FacultyMember): Presentation[] {
+        return fm.presentations;
     }
 
     createFromForm(form: RecognitionForm): Presentation {
@@ -138,12 +133,12 @@ export class PresentationController extends FacultyMemberSubdocumentControler<
     }
 }
 
-export class ExtensionWorkController extends FacultyMemberSubdocumentControler<
+export class ExtensionWorkController extends FacultySubdocumentController<
     ExtensionWork,
     ExtensionWorkForm
 > {
-    getSubdocumentCollection(): ExtensionWork[] {
-        return this.facultyMember.extensionWorks;
+    getSubdocumentCollection(fm: FacultyMember): ExtensionWork[] {
+        return fm.extensionWorks;
     }
 
     createFromForm(form: RecognitionForm): ExtensionWork {

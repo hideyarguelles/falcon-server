@@ -1,13 +1,13 @@
 import { IsEnum, IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne } from "typeorm";
 import { DegreeLevel } from "../../enums";
-import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
+import FacultySubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 
 export interface DegreeForm {}
 
 @Entity()
-export default class Degree extends FacultyMemberSubdocumentEntity {
+export default class Degree extends FacultySubdocumentEntity {
     @Column("enum", { enum: DegreeLevel })
     @IsEnum(DegreeLevel)
     level: DegreeLevel;

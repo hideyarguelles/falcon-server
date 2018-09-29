@@ -1,13 +1,13 @@
 import { IsEnum, IsNotEmpty, IsNumberString, Max, Min } from "class-validator";
 import { Column, Entity, ManyToOne } from "typeorm";
 import { InstructionalMaterialAudience, InstructionalMaterialMedium } from "../../enums";
-import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
+import FacultySubdocumentEntity from "../../interfaces/faculty_subdocument";
 import FacultyMember from "../faculty_member";
 
 export interface InstructionalMaterialForm {}
 
 @Entity()
-export default class InstructionalMaterial extends FacultyMemberSubdocumentEntity {
+export default class InstructionalMaterial extends FacultySubdocumentEntity {
     @Column("enum", { enum: InstructionalMaterialMedium })
     @IsEnum(InstructionalMaterialMedium)
     medium: InstructionalMaterialMedium;

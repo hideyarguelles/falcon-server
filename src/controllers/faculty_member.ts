@@ -94,29 +94,4 @@ export default class FacultyMemberController implements Controller {
 
         return facultyMember;
     }
-
-    async getDegreeController(id: number): Promise<DegreeController> {
-        const facultyMember = await this.findById(id);
-        return new DegreeController(facultyMember);
-    }
-
-    async getExtensionWorkController(id: number): Promise<ExtensionWorkController> {
-        const facultyMember = await this.findById(id);
-        return new ExtensionWorkController(facultyMember);
-    }
-
-    async getInstructionalMaterialController(id: number): Promise<InstructionalMaterialController> {
-        const facultyMember = await this.findById(id);
-        return new InstructionalMaterialController(facultyMember);
-    }
-
-    async getPresentationController(id: number): Promise<PresentationController> {
-        const facultyMember = await this.findById(id);
-        return new PresentationController(facultyMember);
-    }
-
-    async getRecognitionController(id: number): Promise<RecognitionController> {
-        const facultyMember = await this.findById(id);
-        return new RecognitionController(facultyMember);
-    }
 }

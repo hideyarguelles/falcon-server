@@ -1,14 +1,14 @@
 import { ArrayUnique, IsArray, IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ExtensionWorkRole } from "../../enums";
-import FacultyMemberSubdocumentEntity from "../../interfaces/faculty_subdocument";
+import FacultySubdocumentEntity from "../../interfaces/faculty_subdocument";
 import IsEnumArray from "../../utils/is_enum_array";
 import FacultyMember from "../faculty_member";
 
 export interface ExtensionWorkForm {}
 
 @Entity()
-export default class ExtensionWork extends FacultyMemberSubdocumentEntity {
+export default class ExtensionWork extends FacultySubdocumentEntity {
     @Column("enum", { enum: ExtensionWorkRole, array: true })
     @IsEnumArray(ExtensionWorkRole)
     @ArrayUnique()

@@ -6,7 +6,6 @@ import { UserType } from "../enums";
 import View from "../interfaces/view";
 import { RequireAuthorization } from "../utils/require_authorization";
 import { setContextBoom } from "../utils/set_context_boom";
-import { DegreeView } from "./faculty_subdocuments";
 
 export default class FacultyMemberView extends View<FacultyMemberController> {
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
@@ -19,8 +18,8 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
 
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     get = async (ctx: Context): Promise<void> => {
-        const { id } = ctx.params;
-        await this.controller.get(id).then(facultyMember => {
+        const { facultyId } = ctx.params;
+        await this.controller.get(facultyId).then(facultyMember => {
             ctx.status = status.OK;
             ctx.body = facultyMember;
         });
@@ -39,21 +38,15 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
 
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     update = async (ctx: Context): Promise<void> => {
-        const { id } = ctx.params;
+        const { facultyId } = ctx.params;
         const { user: userForm, faculty: facultyMemberForm } = ctx.request.body;
-        await this.controller.update(id, userForm, facultyMemberForm).then(data => {
+        await this.controller.update(facultyId, userForm, facultyMemberForm).then(data => {
             if (!data) {
-                setContextBoom(ctx, Boom.notFound(`Could not find faculty of id ${id}`));
+                setContextBoom(ctx, Boom.notFound(`Could not find faculty of id ${facultyId}`));
             } else {
                 ctx.status = status.OK;
                 ctx.body = data;
             }
         });
-    };
-
-    getDegreeView = async (ctx: Context): Promise<DegreeView> => {
-        const { id } = ctx.params;
-        const controller = await this.controller.getDegreeController(id);
-        return new DegreeView(controller);
     };
 }

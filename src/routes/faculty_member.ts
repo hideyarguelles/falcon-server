@@ -7,5 +7,5 @@ export default new Router()
     .prefix("/faculty-members")
     .get("/", facultyMemberView.getAll)
     .post("/", facultyMemberView.add)
-    .get("/:id", facultyMemberView.get)
-    .put("/:id", facultyMemberView.update);
+    .get("/:facultyId", facultyMemberView.get)
+    .put("/:facultyId", facultyMemberView.update);
