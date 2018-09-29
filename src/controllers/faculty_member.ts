@@ -1,18 +1,11 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager } from "typeorm";
 import { FacultyMember, User } from "../entities";
-import { FacultyMemberForm } from "../entities/faculty_member";
-import { UserForm } from "../entities/user";
+import { FacultyMemberForm } from "../entities/forms/faculty_member";
+import { UserForm } from "../entities/forms/user";
 import EntityNotFoundError from "../errors/not_found";
-import Controller from "../interfaces/controller";
-import {
-    DegreeController,
-    ExtensionWorkController,
-    InstructionalMaterialController,
-    PresentationController,
-    RecognitionController,
-} from "./faculty_subdocuments";
 import ValidationFailError from "../errors/validation_fail_error";
+import Controller from "../interfaces/controller";
 
 export default class FacultyMemberController implements Controller {
     async findById(id: number, options?: FindOneOptions): Promise<FacultyMember> {

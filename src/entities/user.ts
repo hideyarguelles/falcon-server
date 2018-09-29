@@ -1,16 +1,10 @@
 import * as bcrypt from "bcryptjs";
-import { IsEmail, IsNotEmpty, IsEnum } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty } from "class-validator";
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 import { UserType } from "../enums";
+import { UserForm } from "./forms/user";
 
 const SALT_ROUNDS = 10;
-
-export interface UserForm {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-}
 
 @Entity()
 export default class User extends BaseEntity {
