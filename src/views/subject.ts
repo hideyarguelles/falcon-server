@@ -17,8 +17,8 @@ export default class SubjectView extends View<SubjectController> {
 
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk, UserType.Faculty])
     get = async (ctx: Context): Promise<void> => {
-        const { id } = ctx.params;
-        await this.controller.get(id).then(subject => {
+        const { subjectId } = ctx.params;
+        await this.controller.get(subjectId).then(subject => {
             ctx.status = status.OK;
             ctx.body = subject;
         });
@@ -35,9 +35,9 @@ export default class SubjectView extends View<SubjectController> {
 
     @RequireAuthorization([UserType.Clerk])
     update = async (ctx: Context): Promise<void> => {
-        const { id } = ctx.params;
+        const { subjectId } = ctx.params;
         const subjectForm: SubjectForm = ctx.request.body;
-        await this.controller.update(id, subjectForm).then(newSubject => {
+        await this.controller.update(subjectId, subjectForm).then(newSubject => {
             ctx.status = status.OK;
             ctx.body = newSubject;
         });
