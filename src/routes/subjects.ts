@@ -1,6 +1,6 @@
 import * as Router from "koa-router";
-import SubjectView from "src/views/subject";
-import SubjectController from "src/controllers/subject";
+import SubjectView from "../views/subject";
+import SubjectController from "../controllers/subject";
 
 const subjectsView = new SubjectView(new SubjectController());
 export default new Router()
