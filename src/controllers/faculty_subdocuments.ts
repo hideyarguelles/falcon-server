@@ -1,6 +1,13 @@
 import { validate } from "class-validator";
 import { BaseEntity } from "typeorm";
-import { Degree, ExtensionWork, FacultyMember, InstructionalMaterial, Presentation, Recognition } from "../entities";
+import {
+    Degree,
+    ExtensionWork,
+    FacultyMember,
+    InstructionalMaterial,
+    Presentation,
+    Recognition,
+} from "../entities";
 import { DegreeForm } from "../entities/faculty_subdocuments/degree";
 import { ExtensionWorkForm } from "../entities/faculty_subdocuments/extension_work";
 import { InstructionalMaterialForm } from "../entities/faculty_subdocuments/instructional_material";
@@ -11,24 +18,21 @@ import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyMemberController from "./faculty_member";
 
-export abstract class FacultySubdocumentController<S extends BaseEntity, F>
-    implements Controller {
-    abstract getSubdocumentCollection(fm: FacultyMember): S[];
-    abstract createFromForm(form: F): S;
+export abstract class FacultySubdocumentController<S extends BaseEntity, F> implements Controller {
+    abstract createFromForm(form: F, fm: FacultyMember): S;
     abstract async findById(id: number): Promise<S>;
 
     async add(facultyId: number, form: F): Promise<S> {
         const facultyMember = await new FacultyMemberController().get(facultyId);
-        const entity: S = this.createFromForm(form);
+        const entity: S = this.createFromForm(form, facultyMember);
         const formErrors = await validate(entity);
 
         if (formErrors.length > 0) {
             throw new ValidationFailError(formErrors);
         }
 
-        const collection = this.getSubdocumentCollection(facultyMember);
-        collection.push(entity);
         await facultyMember.save();
+        await entity.save();
 
         return entity;
     }
@@ -53,12 +57,10 @@ export abstract class FacultySubdocumentController<S extends BaseEntity, F>
 }
 
 export class DegreeController extends FacultySubdocumentController<Degree, DegreeForm> {
-    getSubdocumentCollection(fm: FacultyMember): Degree[] {
-        return fm.degrees;
-    }
-
-    createFromForm(form: DegreeForm): Degree {
-        return Degree.create(form);
+    createFromForm(form: DegreeForm, facultyMember: FacultyMember): Degree {
+        const entity = Degree.create(form);
+        entity.facultyMember = facultyMember;
+        return entity;
     }
 
     async findById(id: number): Promise<Degree> {
@@ -74,12 +76,10 @@ export class RecognitionController extends FacultySubdocumentController<
     Recognition,
     RecognitionForm
 > {
-    getSubdocumentCollection(fm: FacultyMember): Recognition[] {
-        return fm.recognitions;
-    }
-
-    createFromForm(form: RecognitionForm): Recognition {
-        return Recognition.create(form);
+    createFromForm(form: RecognitionForm, facultyMember: FacultyMember): Recognition {
+        const entity = Recognition.create(form);
+        entity.facultyMember = facultyMember;
+        return entity;
     }
 
     async findById(id: number): Promise<Recognition> {
@@ -95,12 +95,13 @@ export class InstructionalMaterialController extends FacultySubdocumentControlle
     InstructionalMaterial,
     InstructionalMaterialForm
 > {
-    getSubdocumentCollection(fm: FacultyMember): InstructionalMaterial[] {
-        return fm.instructionalMaterials;
-    }
-
-    createFromForm(form: InstructionalMaterialForm): InstructionalMaterial {
-        return InstructionalMaterial.create(form);
+    createFromForm(
+        form: InstructionalMaterialForm,
+        facultyMember: FacultyMember,
+    ): InstructionalMaterial {
+        const entity = InstructionalMaterial.create(form);
+        entity.facultyMember = facultyMember;
+        return entity;
     }
 
     async findById(id: number): Promise<InstructionalMaterial> {
@@ -116,12 +117,10 @@ export class PresentationController extends FacultySubdocumentController<
     Presentation,
     PresentationForm
 > {
-    getSubdocumentCollection(fm: FacultyMember): Presentation[] {
-        return fm.presentations;
-    }
-
-    createFromForm(form: RecognitionForm): Presentation {
-        return Presentation.create(form);
+    createFromForm(form: PresentationForm, facultyMember: FacultyMember): Presentation {
+        const entity = Presentation.create(form);
+        entity.facultyMember = facultyMember;
+        return entity;
     }
 
     async findById(id: number): Promise<Presentation> {
@@ -137,12 +136,10 @@ export class ExtensionWorkController extends FacultySubdocumentController<
     ExtensionWork,
     ExtensionWorkForm
 > {
-    getSubdocumentCollection(fm: FacultyMember): ExtensionWork[] {
-        return fm.extensionWorks;
-    }
-
-    createFromForm(form: RecognitionForm): ExtensionWork {
-        return ExtensionWork.create(form);
+    createFromForm(form: ExtensionWorkForm, facultyMember: FacultyMember): ExtensionWork {
+        const entity = ExtensionWork.create(form);
+        entity.facultyMember = facultyMember;
+        return entity;
     }
 
     async findById(id: number): Promise<ExtensionWork> {
