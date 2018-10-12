@@ -21,7 +21,9 @@ export default class FacultyMemberController implements Controller {
     async findByUserId(userId: number): Promise<FacultyMember> {
         const fm = FacultyMember.findOne({
             where: {
-                id: userId,
+                user: {
+                    id: userId,
+                },
             },
             relations: [
                 "user",
