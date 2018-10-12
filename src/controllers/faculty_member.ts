@@ -9,13 +9,37 @@ import Controller from "../interfaces/controller";
 
 export default class FacultyMemberController implements Controller {
     async findById(id: number, options?: FindOneOptions): Promise<FacultyMember> {
-        const facultyMember = await FacultyMember.findOne(id, options);
+        const fm = await FacultyMember.findOne(id, options);
 
-        if (!facultyMember) {
-            throw new EntityNotFoundError(id, FacultyMember.name);
+        if (!fm) {
+            throw new EntityNotFoundError(`Could not find ${FacultyMember.name} of id ${id}`);
         }
 
-        return facultyMember;
+        return fm;
+    }
+
+    async findByUserId(userId: number): Promise<FacultyMember> {
+        const fm = FacultyMember.findOne({
+            where: {
+                id: userId,
+            },
+            relations: [
+                "user",
+                "presentations",
+                "recognitions",
+                "instructionalMaterials",
+                "extensionWorks",
+                "degrees",
+            ],
+        });
+
+        if (!fm) {
+            throw new EntityNotFoundError(
+                `Cloud not find ${FacultyMember.name} with user id ${userId}`,
+            );
+        }
+
+        return fm;
     }
 
     async getAll(): Promise<FacultyMember[]> {

@@ -12,26 +12,29 @@ import { setContextBoom } from "../utils/set_context_boom";
 export default class FacultyMemberView extends View<FacultyMemberController> {
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     getAll = async (ctx: Context): Promise<void> => {
-        await this.controller.getAll().then(facultyMembers => {
+        await this.controller.getAll().then(fm => {
             ctx.status = status.OK;
-            ctx.body = facultyMembers;
+            ctx.body = fm;
         });
     };
 
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     get = async (ctx: Context): Promise<void> => {
         const { facultyId } = ctx.params;
-        await this.controller.get(facultyId).then(facultyMember => {
+        await this.controller.get(facultyId).then(fm => {
             ctx.status = status.OK;
-            ctx.body = facultyMember;
+            ctx.body = fm;
         });
     };
 
     @RequireAuthorization([UserType.Faculty])
     getCurrentFaculty = async (ctx: Context): Promise<void> => {
         const { user } = ctx.state;
-        // await this.controller.
-    }
+        await this.controller.findByUserId(user.id).then(fm => {
+            ctx.status = status.OK;
+            ctx.body = fm;
+        });
+    };
 
     @RequireAuthorization([UserType.Clerk])
     add = async (ctx: Context): Promise<void> => {
@@ -52,11 +55,11 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
             pnuId: form.pnuId,
         };
 
-        await this.controller.add(userForm, facultyMemberForm).then(facultyMember => {
-            delete facultyMember.user.secret;
+        await this.controller.add(userForm, facultyMemberForm).then(fm => {
+            delete fm.user.secret;
 
             ctx.status = status.CREATED;
-            ctx.body = facultyMember;
+            ctx.body = fm;
         });
     };
 
@@ -64,12 +67,12 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
     update = async (ctx: Context): Promise<void> => {
         const { facultyId } = ctx.params;
         const { user: userForm, faculty: facultyMemberForm } = ctx.request.body;
-        await this.controller.update(facultyId, userForm, facultyMemberForm).then(data => {
-            if (!data) {
+        await this.controller.update(facultyId, userForm, facultyMemberForm).then(fm => {
+            if (!fm) {
                 setContextBoom(ctx, Boom.notFound(`Could not find faculty of id ${facultyId}`));
             } else {
                 ctx.status = status.OK;
-                ctx.body = data;
+                ctx.body = fm;
             }
         });
     };

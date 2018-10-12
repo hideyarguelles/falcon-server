@@ -6,6 +6,7 @@ const facultyMemberView = new FacultyMemberView(new FacultyMemberController());
 export default new Router()
     .prefix("/faculty-members")
     .get("/", facultyMemberView.getAll)
+    .get("/current", facultyMemberView.getCurrentFaculty)
     .post("/", facultyMemberView.add)
     .get("/:facultyId", facultyMemberView.get)
     .put("/:facultyId", facultyMemberView.update);
