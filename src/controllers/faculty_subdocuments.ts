@@ -66,7 +66,7 @@ export class DegreeController extends FacultySubdocumentController<Degree, Degre
     async findById(id: number): Promise<Degree> {
         const entity = await Degree.findOne(id);
         if (!entity) {
-            throw new EntityNotFoundError(id, Degree.name);
+            throw new EntityNotFoundError(`Could not find ${Degree.name} of id ${id}`);
         }
         return entity;
     }
@@ -85,7 +85,7 @@ export class RecognitionController extends FacultySubdocumentController<
     async findById(id: number): Promise<Recognition> {
         const entity = await Recognition.findOne(id);
         if (!entity) {
-            throw new EntityNotFoundError(id, Recognition.name);
+            throw new EntityNotFoundError(`Could not find ${Recognition.name} of id ${id}`);
         }
         return entity;
     }
@@ -107,7 +107,9 @@ export class InstructionalMaterialController extends FacultySubdocumentControlle
     async findById(id: number): Promise<InstructionalMaterial> {
         const entity = await InstructionalMaterial.findOne(id);
         if (!entity) {
-            throw new EntityNotFoundError(id, InstructionalMaterial.name);
+            throw new EntityNotFoundError(
+                `Could not find ${InstructionalMaterial.name} of id ${id}`,
+            );
         }
         return entity;
     }
@@ -126,7 +128,7 @@ export class PresentationController extends FacultySubdocumentController<
     async findById(id: number): Promise<Presentation> {
         const entity = await Presentation.findOne(id);
         if (!entity) {
-            throw new EntityNotFoundError(id, Presentation.name);
+            throw new EntityNotFoundError(`Could not find ${Presentation.name} of id ${id}`);
         }
         return entity;
     }
@@ -145,7 +147,7 @@ export class ExtensionWorkController extends FacultySubdocumentController<
     async findById(id: number): Promise<ExtensionWork> {
         const entity = await ExtensionWork.findOne(id);
         if (!entity) {
-            throw new EntityNotFoundError(id, ExtensionWork.name);
+            throw new EntityNotFoundError(`Could not find ${ExtensionWork.name} of id ${id}`);
         }
         return entity;
     }

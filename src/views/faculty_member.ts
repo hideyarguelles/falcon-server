@@ -27,6 +27,12 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
         });
     };
 
+    @RequireAuthorization([UserType.Faculty])
+    getCurrentFaculty = async (ctx: Context): Promise<void> => {
+        const { user } = ctx.state;
+        // await this.controller.
+    }
+
     @RequireAuthorization([UserType.Clerk])
     add = async (ctx: Context): Promise<void> => {
         const form = ctx.request.body;

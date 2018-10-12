@@ -11,7 +11,7 @@ export default class SubjectController implements Controller {
         const subject = await Subject.findOne(id, options);
 
         if (!subject) {
-            throw new EntityNotFoundError(id, Subject.name);
+            throw new EntityNotFoundError(`Could not find ${Subject.name} of id ${id}`);
         }
 
         return subject;
