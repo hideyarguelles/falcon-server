@@ -21,10 +21,8 @@ export default class InstructionalMaterial extends FacultySubdocumentEntity {
     @IsNumberString()
     usageYear: string;
 
-    @Column({ nullable: true })
-    @Min(1)
-    @Max(4)
-    level: number;
+    @Column()
+    level?: string;
 
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
