@@ -92,8 +92,30 @@ export default class FacultyMemberController implements Controller {
         userForm: UserForm,
         facultyMemberForm: FacultyMemberForm,
     ): Promise<FacultyMember> {
-        const facultyMember = await this.findById(id, { relations: ["user"] });
-        const user = facultyMember.user;
+        const facultyMember = await this.findById(id, {
+            relations: [
+                "user",
+                "presentations",
+                "recognitions",
+                "instructionalMaterials",
+                "extensionWorks",
+                "degrees",
+            ],
+        });
+
+        const user = await User.findOne({
+            where: {
+                id: facultyMember.user.id,
+            },
+            select: [
+                "id",
+                "firstName",
+                "lastName",
+                "passwordIsTemporary",
+                "authorization",
+                "email",
+            ],
+        });
         Object.assign(user, userForm);
         const userFormErrors = await validate(user);
 
@@ -112,6 +134,8 @@ export default class FacultyMemberController implements Controller {
             await transactionEM.save(user);
             await transactionEM.save(facultyMember);
         });
+
+        facultyMember.user = user;
 
         return facultyMember;
     }

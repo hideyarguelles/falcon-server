@@ -66,7 +66,22 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     update = async (ctx: Context): Promise<void> => {
         const { facultyId } = ctx.params;
-        const { user: userForm, faculty: facultyMemberForm } = ctx.request.body;
+        const form = ctx.request.body;
+
+        const userForm: UserForm = {
+            firstName: form.firstName,
+            lastName: form.lastName,
+            email: form.email,
+        };
+
+        const facultyMemberForm: FacultyMemberForm = {
+            sex: form.sex,
+            type: form.type,
+            activity: form.activity,
+            birthDate: form.birthDate,
+            pnuId: form.pnuId,
+        };
+
         await this.controller.update(facultyId, userForm, facultyMemberForm).then(fm => {
             if (!fm) {
                 setContextBoom(ctx, Boom.notFound(`Could not find faculty of id ${facultyId}`));
