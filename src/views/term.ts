@@ -18,4 +18,12 @@ export default class TermView extends View<TermController> {
             ctx.body = t;
         });
     };
+
+    add = async (ctx: Context): Promise<void> => {
+        const form = ctx.request.body;
+        await this.controller.add(form).then(t => {
+            ctx.status = status.CREATED;
+            ctx.body = t;
+        });
+    };
 }
