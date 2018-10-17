@@ -1,11 +1,12 @@
-import Controller from "../interfaces/controller";
-import { Term } from "../entities";
-import EntityNotFoundError from "../errors/not_found";
-import { FindOneOptions, getManager, EntityManager } from "typeorm";
-import { TermForm } from "../entities/forms/term";
-import { TermStatus } from "../enums";
 import { validate } from "class-validator";
+import { EntityManager, FindOneOptions, getManager } from "typeorm";
+import { ClassSchedule, FacultyMember, Term, TimeConstraint } from "../entities";
+import { TermForm } from "../entities/forms/term";
+import { ActivityType, TermStatus } from "../enums";
+import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
+import Controller from "../interfaces/controller";
+import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
 
 export default class TermController implements Controller {
     async findById(id: number, options?: FindOneOptions): Promise<Term> {
@@ -56,5 +57,45 @@ export default class TermController implements Controller {
         });
 
         return newTerm;
+    }
+
+    async getClassSchedules(id: number) {
+        const term = await this.findById(id);
+        const facultyMembers = await FacultyMember.find({
+            where: {
+                activity: ActivityType.Active,
+            },
+            relations: ["user"],
+        });
+
+        return await Promise.all(
+            facultyMembers.map(
+                async fm =>
+                    ({
+                        facultyId: fm.id,
+                        firstName: fm.user.firstName,
+                        lastName: fm.user.lastName,
+                        pnuId: fm.pnuId,
+                        type: fm.type,
+
+                        classSchedules: await getManager()
+                            .createQueryBuilder(ClassSchedule, "classSchedule")
+                            .leftJoinAndSelect("classSchedule.term", "term")
+                            .leftJoinAndSelect("classSchedule.feedback", "feedback")
+                            .leftJoinAndSelect("feedback.facultyMember", "facultyMember")
+                            .where("facultyMember.id = :id", { id: fm.id })
+                            .andWhere("term.id = :id", { id: term.id })
+                            .getMany(),
+
+                        timeConstraints: await getManager()
+                            .createQueryBuilder(TimeConstraint, "timeConstraint")
+                            .leftJoinAndSelect("timeConstraint.facultyMember", "facultyMember")
+                            .leftJoinAndSelect("timeConstraint.term", "term")
+                            .where("facultyMember.id = :id", { id: fm.id })
+                            .andWhere("term.id = :id", { id: term.id })
+                            .getMany(),
+                    } as FacultyLoadingFacultyMemberItem),
+            ),
+        );
     }
 }

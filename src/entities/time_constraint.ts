@@ -9,9 +9,6 @@ export default class TimeConstraint extends BaseEntity {
     id: number;
 
     @Column()
-    isAvailable: boolean;
-
-    @Column()
     isPreferred: boolean;
 
     @Column("enum", { enum: MeetingDays })

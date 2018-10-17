@@ -7,4 +7,5 @@ export default new Router()
     .prefix("/terms")
     .get("/", termView.getAll)
     .post("/", termView.add)
-    .get("/:termId", termView.get);
+    .get("/:termId", termView.get)
+    .get("/:termId/class-schedules", termView.getClassSchedules);
