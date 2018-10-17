@@ -5,7 +5,8 @@ import { catchResponseError } from "../middlewares/catch_response_error";
 import { nestRouter } from "../utils/nest_router";
 import facultyMemberRouter from "./faculty_member";
 import subdocumentRouter from "./faculty_subdocuments";
-import subjectsRouter from "./subjects";
+import subjectRouter from "./subject";
+import termRouter from "./term";
 import userRouter from "./user";
 
 const API_CHILD_ROUTERS = [
@@ -13,7 +14,8 @@ const API_CHILD_ROUTERS = [
     userRouter,
     facultyMemberRouter,
     subdocumentRouter,
-    subjectsRouter,
+    subjectRouter,
+    termRouter,
 ];
 
 // Always return OK at /
