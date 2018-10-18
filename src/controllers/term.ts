@@ -3,6 +3,7 @@ import { EntityManager, FindOneOptions, getManager } from "typeorm";
 import { ClassSchedule, FacultyMember, Term, TimeConstraint } from "../entities";
 import { TermForm } from "../entities/forms/term";
 import { ActivityType, TermStatus } from "../enums";
+import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
@@ -59,17 +60,17 @@ export default class TermController implements Controller {
         return newTerm;
     }
 
-    async getFacultyMembers(id: number) {
+    async getFacultyMembers(id: number): Promise<FacultyLoadingFacultyMemberItem[]> {
         const term = await this.findById(id);
-        const facultyMembers = await FacultyMember.find({
+        let fms = await FacultyMember.find({
             where: {
                 activity: ActivityType.Active,
             },
             relations: ["user"],
         });
 
-        return await Promise.all(
-            facultyMembers.map(
+        const facultyMembers = await Promise.all(
+            fms.map(
                 async fm =>
                     ({
                         facultyId: fm.id,
@@ -97,5 +98,11 @@ export default class TermController implements Controller {
                     } as FacultyLoadingFacultyMemberItem),
             ),
         );
+
+        facultyMembers.forEach(fm => {
+            fm.loadAmountStatus = getStatusForLoadAmount(fm.type, fm.classSchedules.length);
+        });
+
+        return facultyMembers;
     }
 }
