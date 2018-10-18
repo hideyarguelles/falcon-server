@@ -8,4 +8,4 @@ export default new Router()
     .get("/", termView.getAll)
     .post("/", termView.add)
     .get("/:termId", termView.get)
-    .get("/:termId/class-schedules", termView.getClassSchedules);
+    .get("/:termId/faculty-members", termView.getFacultyMembers);

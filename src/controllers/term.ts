@@ -59,7 +59,7 @@ export default class TermController implements Controller {
         return newTerm;
     }
 
-    async getClassSchedules(id: number) {
+    async getFacultyMembers(id: number) {
         const term = await this.findById(id);
         const facultyMembers = await FacultyMember.find({
             where: {
