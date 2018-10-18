@@ -8,6 +8,6 @@ export default interface FacultyLoadingFacultyMemberItem {
     pnuId: string;
     type: FacultyMemberType;
     
-    classSchedules: [ClassSchedule];
-    timeConstraints: [TimeConstraint];
+    classSchedules: ClassSchedule[];
+    timeConstraints: TimeConstraint[];
 }
