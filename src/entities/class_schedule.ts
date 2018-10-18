@@ -29,9 +29,6 @@ export default class ClassSchedule extends BaseEntity {
     room: string;
 
     @Column()
-    enrollmentCap: number;
-
-    @Column()
     course: string;
 
     @Column()
