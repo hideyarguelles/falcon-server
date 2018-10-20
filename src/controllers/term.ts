@@ -8,6 +8,7 @@ import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
+import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
 
 export default class TermController implements Controller {
     async findById(id: number, options?: FindOneOptions): Promise<Term> {
@@ -60,9 +61,9 @@ export default class TermController implements Controller {
         return newTerm;
     }
 
-    async getFacultyMembers(id: number): Promise<FacultyLoadingFacultyMemberItem[]> {
-        const term = await this.findById(id);
-        let fms = await FacultyMember.find({
+    async getFacultyMembers(termId: number): Promise<FacultyLoadingFacultyMemberItem[]> {
+        const term = await this.findById(termId);
+        const fms = await FacultyMember.find({
             where: {
                 activity: ActivityType.Active,
             },
@@ -104,5 +105,44 @@ export default class TermController implements Controller {
         });
 
         return facultyMembers;
+    }
+
+    async getClassSchedules(termId: number): Promise<FacultyLoadingClassScheduleItem[]> {
+        const term = await this.findById(termId);
+        const css = await ClassSchedule.find({
+            where: { term },
+            relations: [
+                "subject",
+                "feedback",
+                "feedback.facultyMember",
+                "feedback.facultyMember.user",
+            ],
+        });
+
+        return css.map(cs => ({
+            classScheduleId: cs.id,
+            meetingDays: cs.meetingDays,
+            meetingHours: cs.meetingHours,
+            room: cs.room,
+            section: cs.section,
+            course: cs.course,
+
+            subjectName: cs.subject.name,
+            subjectCode: cs.subject.code,
+            subjectDescription: cs.subject.description,
+            subjectCategory: cs.subject.category,
+            subjectProgram: cs.subject.program,
+
+            facultyMember:
+                cs.feedback === undefined
+                    ? undefined
+                    : {
+                          facultyId: cs.feedback.facultyMember.id,
+                          firstName: cs.feedback.facultyMember.user.firstName,
+                          lastName: cs.feedback.facultyMember.user.lastName,
+                          pnuId: cs.feedback.facultyMember.pnuId,
+                          type: cs.feedback.facultyMember.type,
+                      },
+        }));
     }
 }
