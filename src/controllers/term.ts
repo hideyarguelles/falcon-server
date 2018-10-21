@@ -1,17 +1,19 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager } from "typeorm";
 import { ClassSchedule, FacultyMember, Term, TimeConstraint } from "../entities";
+import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
+import Subject from "../entities/subject";
 import { ActivityType, TermStatus } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
-import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
+import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
 
 export default class TermController implements Controller {
-    async findById(id: number, options?: FindOneOptions): Promise<Term> {
+    async findTermById(id: number, options?: FindOneOptions): Promise<Term> {
         const fm = await Term.findOne(id, options);
 
         if (!fm) {
@@ -21,12 +23,22 @@ export default class TermController implements Controller {
         return fm;
     }
 
+    async findSubjectByid(id: number, options?: FindOneOptions): Promise<Subject> {
+        const s = await Subject.findOne(id, options);
+
+        if (!s) {
+            throw new EntityNotFoundError(`Could not find ${Subject.name} of id ${id}`);
+        }
+
+        return s;
+    }
+
     async getAll(): Promise<Term[]> {
         return await Term.find();
     }
 
     async get(id: number): Promise<Term> {
-        return await this.findById(id, {
+        return await this.findTermById(id, {
             relations: [
                 "classSchedules",
                 "classSchedules.subject",
@@ -61,8 +73,25 @@ export default class TermController implements Controller {
         return newTerm;
     }
 
+    async addClassSchedule(termId: number, form: ClassScheduleForm): Promise<ClassSchedule> {
+        const term = await this.findTermById(termId);
+        const subject = await this.findSubjectByid(form.subject);
+        const newClassSchedule = ClassSchedule.create({ ...form, subject, term });
+
+        const formErrors = await validate(newClassSchedule);
+        if (formErrors.length > 0) {
+            throw new ValidationFailError(formErrors);
+        }
+
+        term.classSchedules.push(newClassSchedule);
+        await newClassSchedule.save();
+        await term.save();
+
+        return newClassSchedule;
+    }
+
     async getFacultyMembers(termId: number): Promise<FacultyLoadingFacultyMemberItem[]> {
-        const term = await this.findById(termId);
+        const term = await this.findTermById(termId);
         const fms = await FacultyMember.find({
             where: {
                 activity: ActivityType.Active,
@@ -108,7 +137,7 @@ export default class TermController implements Controller {
     }
 
     async getClassSchedules(termId: number): Promise<FacultyLoadingClassScheduleItem[]> {
-        const term = await this.findById(termId);
+        const term = await this.findTermById(termId);
         const css = await ClassSchedule.find({
             where: { term },
             relations: [
