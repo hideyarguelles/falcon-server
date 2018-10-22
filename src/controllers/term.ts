@@ -77,7 +77,7 @@ export default class TermController implements Controller {
         termId: number,
         form: ClassScheduleForm,
     ): Promise<FacultyLoadingClassScheduleItem> {
-        const term = await this.findTermById(termId);
+        const term = await this.findTermById(termId, { relations: ["classSchedules"] });
         const subject = await this.findSubjectByid(form.subject);
         const newClassSchedule = ClassSchedule.create({ ...form, subject, term });
 
@@ -178,16 +178,15 @@ export default class TermController implements Controller {
             subjectCategory: cs.subject.category,
             subjectProgram: cs.subject.program,
 
-            facultyMember:
-                cs.feedback === undefined
-                    ? undefined
-                    : {
-                          facultyId: cs.feedback.facultyMember.id,
-                          firstName: cs.feedback.facultyMember.user.firstName,
-                          lastName: cs.feedback.facultyMember.user.lastName,
-                          pnuId: cs.feedback.facultyMember.pnuId,
-                          type: cs.feedback.facultyMember.type,
-                      },
+            facultyMember: !cs.feedback
+                ? undefined
+                : {
+                      facultyId: cs.feedback.facultyMember.id,
+                      firstName: cs.feedback.facultyMember.user.firstName,
+                      lastName: cs.feedback.facultyMember.user.lastName,
+                      pnuId: cs.feedback.facultyMember.pnuId,
+                      type: cs.feedback.facultyMember.type,
+                  },
         }));
     }
 }
