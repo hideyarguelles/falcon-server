@@ -73,7 +73,10 @@ export default class TermController implements Controller {
         return newTerm;
     }
 
-    async addClassSchedule(termId: number, form: ClassScheduleForm): Promise<ClassSchedule> {
+    async addClassSchedule(
+        termId: number,
+        form: ClassScheduleForm,
+    ): Promise<FacultyLoadingClassScheduleItem> {
         const term = await this.findTermById(termId);
         const subject = await this.findSubjectByid(form.subject);
         const newClassSchedule = ClassSchedule.create({ ...form, subject, term });
@@ -87,7 +90,20 @@ export default class TermController implements Controller {
         await newClassSchedule.save();
         await term.save();
 
-        return newClassSchedule;
+        return {
+            classScheduleId: newClassSchedule.id,
+            meetingDays: newClassSchedule.meetingDays,
+            meetingHours: newClassSchedule.meetingHours,
+            room: newClassSchedule.room,
+            section: newClassSchedule.section,
+            course: newClassSchedule.course,
+
+            subjectName: subject.name,
+            subjectCode: subject.code,
+            subjectDescription: subject.description,
+            subjectCategory: subject.category,
+            subjectProgram: subject.program,
+        };
     }
 
     async getFacultyMembers(termId: number): Promise<FacultyLoadingFacultyMemberItem[]> {
