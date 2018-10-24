@@ -23,7 +23,7 @@ export default class TermController implements Controller {
         return fm;
     }
 
-    async findSubjectByid(id: number, options?: FindOneOptions): Promise<Subject> {
+    async findSubjectById(id: number, options?: FindOneOptions): Promise<Subject> {
         const s = await Subject.findOne(id, options);
 
         if (!s) {
@@ -77,8 +77,8 @@ export default class TermController implements Controller {
         termId: number,
         form: ClassScheduleForm,
     ): Promise<FacultyLoadingClassScheduleItem> {
-        const term = await this.findTermById(termId);
-        const subject = await this.findSubjectByid(form.subject);
+        const term = await this.findTermById(termId, { relations: ["classSchedules"] });
+        const subject = await this.findSubjectById(form.subject);
         const newClassSchedule = ClassSchedule.create({ ...form, subject, term });
 
         const formErrors = await validate(newClassSchedule);
@@ -91,7 +91,7 @@ export default class TermController implements Controller {
         await term.save();
 
         return {
-            classScheduleId: newClassSchedule.id,
+            id: newClassSchedule.id,
             meetingDays: newClassSchedule.meetingDays,
             meetingHours: newClassSchedule.meetingHours,
             room: newClassSchedule.room,
@@ -165,7 +165,7 @@ export default class TermController implements Controller {
         });
 
         return css.map(cs => ({
-            classScheduleId: cs.id,
+            id: cs.id,
             meetingDays: cs.meetingDays,
             meetingHours: cs.meetingHours,
             room: cs.room,
@@ -178,16 +178,15 @@ export default class TermController implements Controller {
             subjectCategory: cs.subject.category,
             subjectProgram: cs.subject.program,
 
-            facultyMember:
-                cs.feedback === undefined
-                    ? undefined
-                    : {
-                          facultyId: cs.feedback.facultyMember.id,
-                          firstName: cs.feedback.facultyMember.user.firstName,
-                          lastName: cs.feedback.facultyMember.user.lastName,
-                          pnuId: cs.feedback.facultyMember.pnuId,
-                          type: cs.feedback.facultyMember.type,
-                      },
+            facultyMember: !cs.feedback
+                ? undefined
+                : {
+                      id: cs.feedback.facultyMember.id,
+                      firstName: cs.feedback.facultyMember.user.firstName,
+                      lastName: cs.feedback.facultyMember.user.lastName,
+                      pnuId: cs.feedback.facultyMember.pnuId,
+                      type: cs.feedback.facultyMember.type,
+                  },
         }));
     }
 }

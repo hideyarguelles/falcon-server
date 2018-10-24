@@ -1,8 +1,8 @@
-import { MeetingDays, MeetingHours, FacultyMemberType, SubjectCategory } from "../enums";
+import { FacultyMemberType, MeetingDays, MeetingHours, SubjectCategory } from "../enums";
 import Program from "../enums/program";
 
 interface ClassScheduleItemFacultyMember {
-    facultyId: number;
+    id: number;
     firstName: string;
     lastName: string;
     pnuId: string;
@@ -10,7 +10,7 @@ interface ClassScheduleItemFacultyMember {
 }
 
 export default interface FacultyLoadingClassScheduleItem {
-    classScheduleId: number;
+    id: number;
     meetingDays: MeetingDays;
     meetingHours: MeetingHours;
     room: string;
