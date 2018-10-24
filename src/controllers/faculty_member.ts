@@ -37,7 +37,7 @@ export default class FacultyMemberController implements Controller {
 
         if (!fm) {
             throw new EntityNotFoundError(
-                `Cloud not find ${FacultyMember.name} with user id ${userId}`,
+                `Could not find ${FacultyMember.name} with user id ${userId}`,
             );
         }
 
