@@ -166,7 +166,7 @@ export default class TermController implements Controller {
 
     async getMySchedule(termId: number, user: User): Promise<FacultyLoadingFacultyMemberItem> {
         const term = await this.findTermById(termId);
-        const facultyMember = await FacultyMember.findOne({ where: { user } });
+        const facultyMember = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
         if (!facultyMember) {
             throw new EntityNotFoundError(
                 "Could not find corresponding faculty member for current user",
