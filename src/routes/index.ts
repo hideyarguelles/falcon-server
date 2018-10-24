@@ -3,6 +3,7 @@ import { Context } from "koa";
 import * as Router from "koa-router";
 import { catchResponseError } from "../middlewares/catch_response_error";
 import { nestRouter } from "../utils/nest_router";
+import classScheduleRouter from "./class_schedule";
 import facultyMemberRouter from "./faculty_member";
 import subdocumentRouter from "./faculty_subdocuments";
 import subjectRouter from "./subject";
@@ -16,6 +17,7 @@ const API_CHILD_ROUTERS = [
     subdocumentRouter,
     subjectRouter,
     termRouter,
+    classScheduleRouter,
 ];
 
 // Always return OK at /
