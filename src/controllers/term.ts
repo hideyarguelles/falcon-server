@@ -1,6 +1,6 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager } from "typeorm";
-import { ClassSchedule, FacultyMember, Term, TimeConstraint } from "../entities";
+import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../entities";
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
@@ -11,6 +11,31 @@ import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
+
+const formatClassSchedule = cs => ({
+    id: cs.id,
+    meetingDays: cs.meetingDays,
+    meetingHours: cs.meetingHours,
+    room: cs.room,
+    section: cs.section,
+    course: cs.course,
+
+    subjectName: cs.subject.name,
+    subjectCode: cs.subject.code,
+    subjectDescription: cs.subject.description,
+    subjectCategory: cs.subject.category,
+    subjectProgram: cs.subject.program,
+
+    facultyMember: !cs.feedback
+        ? undefined
+        : {
+              id: cs.feedback.facultyMember.id,
+              firstName: cs.feedback.facultyMember.user.firstName,
+              lastName: cs.feedback.facultyMember.user.lastName,
+              pnuId: cs.feedback.facultyMember.pnuId,
+              type: cs.feedback.facultyMember.type,
+          },
+});
 
 export default class TermController implements Controller {
     async findTermById(id: number, options?: FindOneOptions): Promise<Term> {
@@ -90,20 +115,7 @@ export default class TermController implements Controller {
         await newClassSchedule.save();
         await term.save();
 
-        return {
-            id: newClassSchedule.id,
-            meetingDays: newClassSchedule.meetingDays,
-            meetingHours: newClassSchedule.meetingHours,
-            room: newClassSchedule.room,
-            section: newClassSchedule.section,
-            course: newClassSchedule.course,
-
-            subjectName: subject.name,
-            subjectCode: subject.code,
-            subjectDescription: subject.description,
-            subjectCategory: subject.category,
-            subjectProgram: subject.program,
-        };
+        return formatClassSchedule(newClassSchedule);
     }
 
     async getFacultyMembers(termId: number): Promise<FacultyLoadingFacultyMemberItem[]> {
@@ -152,6 +164,49 @@ export default class TermController implements Controller {
         return facultyMembers;
     }
 
+    async getMySchedule(termId: number, user: User): Promise<FacultyLoadingFacultyMemberItem> {
+        const term = await this.findTermById(termId);
+        const facultyMember = await FacultyMember.findOne({ where: { user } });
+        if (!facultyMember) {
+            throw new EntityNotFoundError(
+                "Could not find corresponding faculty member for current user",
+            );
+        }
+
+        const classSchedules = await ClassSchedule.find({
+            where: {
+                term,
+                feedback: {
+                    facultyMember,
+                },
+            },
+            relations: [
+                "subject",
+                "feedback",
+                "feedback.facultyMember",
+                "feedback.facultyMember.user",
+            ],
+        });
+
+        const timeConstraints = await TimeConstraint.find({
+            where: {
+                term,
+                facultyMember,
+            },
+        });
+
+        return {
+            facultyId: facultyMember.id,
+            firstName: facultyMember.user.firstName,
+            lastName: facultyMember.user.lastName,
+            pnuId: facultyMember.pnuId,
+            type: facultyMember.type,
+            classSchedules,
+            timeConstraints,
+            loadAmountStatus: getStatusForLoadAmount(facultyMember.type, classSchedules.length),
+        };
+    }
+
     async getClassSchedules(termId: number): Promise<FacultyLoadingClassScheduleItem[]> {
         const term = await this.findTermById(termId);
         const css = await ClassSchedule.find({
@@ -164,29 +219,6 @@ export default class TermController implements Controller {
             ],
         });
 
-        return css.map(cs => ({
-            id: cs.id,
-            meetingDays: cs.meetingDays,
-            meetingHours: cs.meetingHours,
-            room: cs.room,
-            section: cs.section,
-            course: cs.course,
-
-            subjectName: cs.subject.name,
-            subjectCode: cs.subject.code,
-            subjectDescription: cs.subject.description,
-            subjectCategory: cs.subject.category,
-            subjectProgram: cs.subject.program,
-
-            facultyMember: !cs.feedback
-                ? undefined
-                : {
-                      id: cs.feedback.facultyMember.id,
-                      firstName: cs.feedback.facultyMember.user.firstName,
-                      lastName: cs.feedback.facultyMember.user.lastName,
-                      pnuId: cs.feedback.facultyMember.pnuId,
-                      type: cs.feedback.facultyMember.type,
-                  },
-        }));
+        return css.map(formatClassSchedule);
     }
 }

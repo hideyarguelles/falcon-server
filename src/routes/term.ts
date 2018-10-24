@@ -9,5 +9,6 @@ export default new Router()
     .post("/", termView.add)
     .get("/:termId", termView.get)
     .get("/:termId/faculty-members", termView.getFacultyMembers)
+    .get("/:termId/my-schedules", termView.getMySchedule)
     .get("/:termId/class-schedules", termView.getClassSchedules)
     .post("/:termId/class-schedules", termView.addClassSchedule);

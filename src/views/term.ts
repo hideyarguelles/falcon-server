@@ -51,4 +51,13 @@ export default class TermView extends View<TermController> {
             ctx.body = cs;
         });
     };
+
+    getMySchedule = async (ctx: Context): Promise<void> => {
+        const { termId } = ctx.params;
+        const { user } = ctx.state;
+        await this.controller.getMySchedule(termId, user).then(ms => {
+            ctx.status = status.OK;
+            ctx.body = ms;
+        });
+    };
 }
