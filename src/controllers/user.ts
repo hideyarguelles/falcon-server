@@ -1,4 +1,3 @@
-import { Context } from "koa";
 import { User } from "../entities";
 import Controller from "../interfaces/controller";
 
@@ -18,5 +17,9 @@ export default class UserController implements Controller {
         return user;
     }
 
-    async setPassword(ctx: Context): Promise<void> {}
+    async setPassword(user: User, form: any): Promise<void> {
+        const { password } = form;
+        await user.setPassword(password);
+        await user.save();
+    }
 }

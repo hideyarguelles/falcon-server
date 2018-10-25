@@ -80,4 +80,18 @@ export default class User extends BaseEntity {
             }),
         );
     }
+
+    setPassword(newPassword: string): Promise<User> {
+        return new Promise((resolve, reject) =>
+            bcrypt.hash(newPassword, SALT_ROUNDS, (err, hash) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                this.secret = hash;
+                resolve(this);
+            }),
+        );
+    }
 }
