@@ -4,7 +4,7 @@ import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../ent
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
-import { ActivityType, TermStatus } from "../enums";
+import { ActivityType, TermStatus, MeetingHours } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
@@ -220,5 +220,28 @@ export default class TermController implements Controller {
         });
 
         return css.map(formatClassSchedule);
+    }
+
+    async setMyTimeConstraints(termId: number, user: User, form: any): Promise<TimeConstraint[]> {
+        const term = await this.findTermById(termId);
+        const facultyMember = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
+        if (!facultyMember) {
+            throw new EntityNotFoundError(
+                "Could not find corresponding faculty member for current user",
+            );
+        }
+
+        const tcs = form.timeConstraints.map((tc: any) =>
+            TimeConstraint.create({
+                meetingHours: tc.meetingHours,
+                meetingDays: tc.meetingDays,
+                isPreferred: tc.isPreferred,
+                term,
+                facultyMember,
+            }),
+        );
+
+        await Promise.all(tcs.map(async tc => await tc.save()));
+        return tcs;
     }
 }

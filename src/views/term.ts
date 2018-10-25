@@ -1,7 +1,7 @@
-import View from "../interfaces/view";
-import TermController from "../controllers/term";
-import { Context } from "koa";
 import * as status from "http-status-codes";
+import { Context } from "koa";
+import TermController from "../controllers/term";
+import View from "../interfaces/view";
 
 export default class TermView extends View<TermController> {
     getAll = async (ctx: Context): Promise<void> => {
@@ -58,6 +58,16 @@ export default class TermView extends View<TermController> {
         await this.controller.getMySchedule(termId, user).then(ms => {
             ctx.status = status.OK;
             ctx.body = ms;
+        });
+    };
+
+    setTimeConstraints = async (ctx: Context): Promise<void> => {
+        const { termId } = ctx.params;
+        const { user } = ctx.state;
+        const form = ctx.request.body;
+        await this.controller.setMyTimeConstraints(termId, user, form).then(tcs => {
+            ctx.status = status.CREATED;
+            ctx.body = tcs;
         });
     };
 }
