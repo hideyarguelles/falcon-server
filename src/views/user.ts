@@ -35,7 +35,7 @@ export default class UserView extends View<UserController> {
     setPassword = async (ctx: Context): Promise<void> => {
         const { user } = ctx.state;
         const form = ctx.request.body;
-        this.controller.setPassword(user, form).then(() => {
+        await this.controller.setPassword(user, form).then(() => {
             ctx.status = status.OK;
         });
     };
