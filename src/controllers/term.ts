@@ -4,7 +4,7 @@ import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../ent
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
-import { ActivityType, TermStatus } from "../enums";
+import { ActivityType, TermStatus, MeetingHours } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
@@ -137,22 +137,34 @@ export default class TermController implements Controller {
                         pnuId: fm.pnuId,
                         type: fm.type,
 
-                        classSchedules: await getManager()
-                            .createQueryBuilder(ClassSchedule, "classSchedule")
-                            .leftJoinAndSelect("classSchedule.term", "term")
-                            .leftJoinAndSelect("classSchedule.feedback", "feedback")
-                            .leftJoinAndSelect("feedback.facultyMember", "facultyMember")
-                            .where("facultyMember.id = :id", { id: fm.id })
-                            .andWhere("term.id = :id", { id: term.id })
-                            .getMany(),
+                        classSchedules: await ClassSchedule.find({
+                            relations: [
+                                "feedback",
+                                "subject",
+                            ],
+                            where: {
+                                feedback: {
+                                    facultyMember: {
+                                        id: fm.id,
+                                    },
+                                },
+                                term: {
+                                    id: term.id,
+                                },
+                            },
+                        }),
 
-                        timeConstraints: await getManager()
-                            .createQueryBuilder(TimeConstraint, "timeConstraint")
-                            .leftJoinAndSelect("timeConstraint.facultyMember", "facultyMember")
-                            .leftJoinAndSelect("timeConstraint.term", "term")
-                            .where("facultyMember.id = :id", { id: fm.id })
-                            .andWhere("term.id = :id", { id: term.id })
-                            .getMany(),
+                        timeConstraints: await TimeConstraint.find({
+                            relations: ["facultyMember", "facultyMember.user"],
+                            where: {
+                                facultyMember: {
+                                    id: fm.id,
+                                },
+                                term: {
+                                    id: term.id,
+                                },
+                            },
+                        }),
                     } as FacultyLoadingFacultyMemberItem),
             ),
         );
@@ -220,5 +232,28 @@ export default class TermController implements Controller {
         });
 
         return css.map(formatClassSchedule);
+    }
+
+    async setMyTimeConstraints(termId: number, user: User, form: any): Promise<TimeConstraint[]> {
+        const term = await this.findTermById(termId);
+        const facultyMember = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
+        if (!facultyMember) {
+            throw new EntityNotFoundError(
+                "Could not find corresponding faculty member for current user",
+            );
+        }
+
+        const tcs = form.timeConstraints.map((tc: any) =>
+            TimeConstraint.create({
+                meetingHours: tc.meetingHours,
+                meetingDays: tc.meetingDays,
+                isPreferred: tc.isPreferred,
+                term,
+                facultyMember,
+            }),
+        );
+
+        await Promise.all(tcs.map(async tc => await tc.save()));
+        return tcs;
     }
 }
