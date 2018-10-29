@@ -137,22 +137,34 @@ export default class TermController implements Controller {
                         pnuId: fm.pnuId,
                         type: fm.type,
 
-                        classSchedules: await getManager()
-                            .createQueryBuilder(ClassSchedule, "classSchedule")
-                            .leftJoinAndSelect("classSchedule.term", "term")
-                            .leftJoinAndSelect("classSchedule.feedback", "feedback")
-                            .leftJoinAndSelect("feedback.facultyMember", "facultyMember")
-                            .where("facultyMember.id = :id", { id: fm.id })
-                            .andWhere("term.id = :id", { id: term.id })
-                            .getMany(),
+                        classSchedules: await ClassSchedule.find({
+                            relations: [
+                                "feedback",
+                                "subject",
+                            ],
+                            where: {
+                                feedback: {
+                                    facultyMember: {
+                                        id: fm.id,
+                                    },
+                                },
+                                term: {
+                                    id: term.id,
+                                },
+                            },
+                        }),
 
-                        timeConstraints: await getManager()
-                            .createQueryBuilder(TimeConstraint, "timeConstraint")
-                            .leftJoinAndSelect("timeConstraint.facultyMember", "facultyMember")
-                            .leftJoinAndSelect("timeConstraint.term", "term")
-                            .where("facultyMember.id = :id", { id: fm.id })
-                            .andWhere("term.id = :id", { id: term.id })
-                            .getMany(),
+                        timeConstraints: await TimeConstraint.find({
+                            relations: ["facultyMember", "facultyMember.user"],
+                            where: {
+                                facultyMember: {
+                                    id: fm.id,
+                                },
+                                term: {
+                                    id: term.id,
+                                },
+                            },
+                        }),
                     } as FacultyLoadingFacultyMemberItem),
             ),
         );
