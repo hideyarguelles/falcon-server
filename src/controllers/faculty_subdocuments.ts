@@ -23,7 +23,7 @@ export abstract class FacultySubdocumentController<S extends BaseEntity, F> impl
     abstract async findById(id: number): Promise<S>;
 
     async add(facultyId: number, form: F): Promise<S> {
-        const facultyMember = await new FacultyMemberController().get(facultyId);
+        const facultyMember = await new FacultyMemberController().findById(facultyId);
         const entity: S = this.createFromForm(form, facultyMember);
         const formErrors = await validate(entity);
 

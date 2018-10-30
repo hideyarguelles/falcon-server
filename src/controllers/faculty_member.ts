@@ -1,11 +1,14 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager } from "typeorm";
-import { FacultyMember, User } from "../entities";
+import { FacultyMember, User, ClassSchedule } from "../entities";
 import { FacultyMemberForm } from "../entities/forms/faculty_member";
 import { UserForm } from "../entities/forms/user";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
+import { FeedbackStatus } from "../enums";
+import * as _ from "lodash";
+import FacultyProfile from "../interfaces/faculty_profile";
 
 export default class FacultyMemberController implements Controller {
     async findById(id: number, options?: FindOneOptions): Promise<FacultyMember> {
@@ -44,14 +47,43 @@ export default class FacultyMemberController implements Controller {
         return fm;
     }
 
-    async getAll(): Promise<FacultyMember[]> {
-        return FacultyMember.find({
+    async getAll(): Promise<FacultyProfile[]> {
+        const fms = await FacultyMember.find({
             relations: ["user"],
         });
+
+        return fms.map(fm => ({
+            id: fm.id,
+            sex: fm.sex,
+            type: fm.type,
+            activity: fm.activity,
+            birthDate: fm.birthDate,
+            pnuId: fm.pnuId,
+            firstName: fm.user.firstName,
+            lastName: fm.user.lastName,
+            email: fm.user.email,
+        }));
     }
 
-    async get(id: number): Promise<FacultyMember> {
-        return await this.findById(id, {
+    async getTaughtSubjects(facultyId: number): Promise<{ [key: string]: number }> {
+        const cs = await ClassSchedule.find({
+            relations: ["subject"],
+            where: {
+                feedback: {
+                    status: FeedbackStatus.Accepted,
+                    facultyMember: {
+                        id: facultyId,
+                    },
+                },
+            },
+        });
+
+        const subjects = cs.map(cs => cs.subject.code);
+        return _.countBy(subjects, s => s);
+    }
+
+    async get(id: number): Promise<FacultyProfile> {
+        const fm = await this.findById(id, {
             relations: [
                 "user",
                 "presentations",
@@ -61,6 +93,24 @@ export default class FacultyMemberController implements Controller {
                 "degrees",
             ],
         });
+
+        return {
+            id: fm.id,
+            sex: fm.sex,
+            type: fm.type,
+            activity: fm.activity,
+            birthDate: fm.birthDate,
+            pnuId: fm.pnuId,
+            firstName: fm.user.firstName,
+            lastName: fm.user.lastName,
+            email: fm.user.email,
+            presentations: fm.presentations,
+            recognitions: fm.recognitions,
+            instructionalMaterials: fm.instructionalMaterials,
+            extensionWorks: fm.extensionWorks,
+            degrees: fm.degrees,
+            taughtSubjects: await this.getTaughtSubjects(fm.id),
+        };
     }
 
     async add(userForm: UserForm, facultyMemberForm: FacultyMemberForm): Promise<FacultyMember> {
@@ -91,15 +141,10 @@ export default class FacultyMemberController implements Controller {
         id: number,
         userForm: UserForm,
         facultyMemberForm: FacultyMemberForm,
-    ): Promise<FacultyMember> {
+    ): Promise<FacultyProfile> {
         const facultyMember = await this.findById(id, {
             relations: [
                 "user",
-                "presentations",
-                "recognitions",
-                "instructionalMaterials",
-                "extensionWorks",
-                "degrees",
             ],
         });
 
@@ -135,8 +180,16 @@ export default class FacultyMemberController implements Controller {
             await transactionEM.save(facultyMember);
         });
 
-        facultyMember.user = user;
-
-        return facultyMember;
+        return {
+            id: facultyMember.id,
+            sex: facultyMember.sex,
+            type: facultyMember.type,
+            activity: facultyMember.activity,
+            birthDate: facultyMember.birthDate,
+            pnuId: facultyMember.pnuId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+        };
     }
 }
