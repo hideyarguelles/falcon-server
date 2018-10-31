@@ -21,8 +21,8 @@ export default class FacultyMemberController implements Controller {
         return fm;
     }
 
-    async findByUserId(userId: number): Promise<FacultyMember> {
-        const fm = FacultyMember.findOne({
+    async findByUserId(userId: number): Promise<FacultyProfile> {
+        const fm = await FacultyMember.findOne({
             where: {
                 user: {
                     id: userId,
@@ -44,7 +44,23 @@ export default class FacultyMemberController implements Controller {
             );
         }
 
-        return fm;
+        return {
+            id: fm.id,
+            sex: fm.sex,
+            type: fm.type,
+            activity: fm.activity,
+            birthDate: fm.birthDate,
+            pnuId: fm.pnuId,
+            firstName: fm.user.firstName,
+            lastName: fm.user.lastName,
+            email: fm.user.email,
+            presentations: fm.presentations,
+            recognitions: fm.recognitions,
+            instructionalMaterials: fm.instructionalMaterials,
+            extensionWorks: fm.extensionWorks,
+            degrees: fm.degrees,
+            taughtSubjects: await this.getTaughtSubjects(fm.id),
+        };
     }
 
     async getAll(): Promise<FacultyProfile[]> {
@@ -143,9 +159,7 @@ export default class FacultyMemberController implements Controller {
         facultyMemberForm: FacultyMemberForm,
     ): Promise<FacultyProfile> {
         const facultyMember = await this.findById(id, {
-            relations: [
-                "user",
-            ],
+            relations: ["user"],
         });
 
         const user = await User.findOne({
