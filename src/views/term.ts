@@ -70,4 +70,11 @@ export default class TermView extends View<TermController> {
             ctx.body = tcs;
         });
     };
+
+    autoAssign = async (ctx: Context): Promise<void> => {
+        await this.controller.autoAssign().then(cs => {
+            ctx.status = status.OK;
+            ctx.body = cs;
+        });
+    };
 }

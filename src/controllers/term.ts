@@ -4,13 +4,14 @@ import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../ent
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
-import { ActivityType, TermStatus, MeetingHours } from "../enums";
+import { ActivityType, TermStatus } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
+import SchedulerController from "./scheduler";
 
 const formatClassSchedule = cs => ({
     id: cs.id,
@@ -98,6 +99,24 @@ export default class TermController implements Controller {
         return newTerm;
     }
 
+    async autoAssign(): Promise<FacultyLoadingClassScheduleItem[]> {
+        const currentTerm = await Term.findOne({
+            where: {
+                status: TermStatus.Scheduling,
+            },
+            relations: [
+                "externalLoads",
+                "classSchedules",
+                "classSchedules.subject",
+                "timeConstraints",
+                "timeConstraints.facultyMember",
+            ],
+        });
+
+        await new SchedulerController().makeSchedule(currentTerm);
+        return await this.getClassSchedules(currentTerm.id);
+    }
+
     async addClassSchedule(
         termId: number,
         form: ClassScheduleForm,
@@ -138,10 +157,7 @@ export default class TermController implements Controller {
                         type: fm.type,
 
                         classSchedules: await ClassSchedule.find({
-                            relations: [
-                                "feedback",
-                                "subject",
-                            ],
+                            relations: ["feedback", "subject"],
                             where: {
                                 feedback: {
                                     facultyMember: {
