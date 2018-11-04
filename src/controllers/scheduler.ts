@@ -222,7 +222,7 @@ export default class SchedulerController implements Controller {
         const subjectsForFaculty = _.uniqBy(csForFaculty.map(c => c.subject), "id");
 
         const assignedToSameSubject = subjectsForFaculty.includes(cs.subject);
-        const prepsCanTake = subjectsForFaculty < MAXIMUM_PREPS || assignedToSameSubject;
+        const prepsCanTake = subjectsForFaculty.length < MAXIMUM_PREPS || assignedToSameSubject;
 
         if (!prepsCanTake) {
             return UNASSIGNABLE;
