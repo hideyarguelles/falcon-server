@@ -77,4 +77,18 @@ export default class TermView extends View<TermController> {
             ctx.body = cs;
         });
     };
+
+    advance = async (ctx: Context): Promise<void> => {
+        await this.controller.advance().then(t => {
+            ctx.status = status.OK;
+            ctx.body = t;
+        });
+    };
+
+    regress = async (ctx: Context): Promise<void> => {
+        await this.controller.regress().then(t => {
+            ctx.status = status.OK;
+            ctx.body = t;
+        });
+    };
 }

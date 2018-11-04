@@ -1,11 +1,12 @@
 import { validate } from "class-validator";
-import { EntityManager, FindOneOptions, getManager } from "typeorm";
+import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
 import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../entities";
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
 import { ActivityType, TermStatus } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
+import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
@@ -74,6 +75,28 @@ export default class TermController implements Controller {
                 "timeConstraints.facultyMember",
             ],
         });
+    }
+
+    async advance(): Promise<Term> {
+        const t = await Term.findOne({
+            where: {
+                status: Not(TermStatus.Archived),
+            },
+        });
+        t.status = nextStatus(t.status);
+        await t.save();
+        return t;
+    }
+
+    async regress(): Promise<Term> {
+        const t = await Term.findOne({
+            where: {
+                status: Not(TermStatus.Archived),
+            },
+        });
+        t.status = previousStatus(t.status);
+        await t.save();
+        return t;
     }
 
     async add(form: TermForm): Promise<Term> {

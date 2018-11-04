@@ -13,4 +13,6 @@ export default new Router()
     .post("/:termId/my-schedules/time-constraints", termView.setTimeConstraints)
     .get("/:termId/class-schedules", termView.getClassSchedules)
     .post("/:termId/class-schedules", termView.addClassSchedule)
-    .post("/auso-assign", termView.autoAssign);
+    .post("/auto-assign", termView.autoAssign)
+    .post("/advance", termView.advance)
+    .post("/regress", termView.regress);
