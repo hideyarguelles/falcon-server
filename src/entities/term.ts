@@ -28,7 +28,7 @@ export default class Term extends BaseEntity {
     @OneToMany((type?: any) => ClassSchedule, (cs: ClassSchedule) => cs.term)
     classSchedules: ClassSchedule[];
 
-    @ManyToMany((type?: any) => TimeConstraint, (tc: TimeConstraint) => tc.term)
+    @OneToMany((type?: any) => TimeConstraint, (tc: TimeConstraint) => tc.term)
     @JoinTable()
     timeConstraints: TimeConstraint[];
 
