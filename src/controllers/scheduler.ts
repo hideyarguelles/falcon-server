@@ -1,11 +1,11 @@
-import { FacultyMember, Term, ClassSchedule, FacultyMemberClassFeedback } from "../entities";
 import {
-    FacultyMemberType,
-    TermStatus,
-    MeetingHours,
-    FeedbackStatus,
-    SubjectCategory,
-} from "../enums";
+    FacultyMember,
+    Term,
+    ClassSchedule,
+    FacultyMemberClassFeedback,
+    TimeConstraint,
+} from "../entities";
+import { FacultyMemberType, MeetingHours, FeedbackStatus, SubjectCategory } from "../enums";
 import Program from "../enums/program";
 import * as _ from "lodash";
 import Subject from "../entities/subject";
@@ -68,8 +68,8 @@ interface ICandidate {
 }
 
 export default class SchedulerController implements Controller {
-    get faculties() {
-        return FacultyMember.find({
+    public async candidatesForClassSchedule(cs: ClassSchedule, term: Term): Promise<ICandidate[]> {
+        const faculties = await FacultyMember.find({
             relations: [
                 "degrees",
                 "recognitions",
@@ -78,10 +78,7 @@ export default class SchedulerController implements Controller {
                 "extensionWorks",
             ],
         });
-    }
 
-    public async candidatesForClassSchedule(cs: ClassSchedule, term: Term): Promise<ICandidate[]> {
-        const faculties = await this.faculties;
         const facultyScores = faculties.map(f => new FacultyScore(f));
 
         const candidates = await Promise.all(
@@ -167,6 +164,7 @@ export default class SchedulerController implements Controller {
 
         // Strictly do not assign above maximum
         if (loadCount >= loadingLimit.maximum) {
+            console.log("Unassignable because above maximum load", loadCount, loadingLimit);
             return UNASSIGNABLE;
         }
 
@@ -179,22 +177,28 @@ export default class SchedulerController implements Controller {
         // ─── Extra load considerations ────────────────────────────────────────────────────────────
         //
 
-        const hasExtraLoad = Boolean(
+        const hasExternalLoad = Boolean(
             t.externalLoads.find(el => el.facultyMember.id === fs.facultyMember.id),
         );
-        if (hasExtraLoad) {
+
+        // If has external load, cannot obtain load above extra
+        if (hasExternalLoad && loadCount >= loadingLimit.extra) {
+            console.log(
+                "Unassignable because has external load and is above extra",
+                hasExternalLoad,
+            );
             return UNASSIGNABLE;
         }
 
         //
         // ─── Availability considerations ────────────────────────────────────────────────────────────
         //
-
         const availability = t.timeConstraints
             .filter(tc => tc.facultyMember.id === fs.facultyMember.id)
             .find(tc => cs.meetingDays === tc.meetingDays && cs.meetingHours === tc.meetingHours);
 
         if (!availability) {
+            // console.log("Unassignable because is not available or preferred");
             return UNASSIGNABLE;
         }
 
@@ -207,6 +211,7 @@ export default class SchedulerController implements Controller {
             fs.facultyMember.type === FacultyMemberType.Adjunct &&
             cs.subject.category !== SubjectCategory.General
         ) {
+            console.log("Unassignable because they are adjunct being assigned to a major subject");
             return UNASSIGNABLE;
         }
 
@@ -214,10 +219,20 @@ export default class SchedulerController implements Controller {
         // ─── Preparation considerations ────────────────────────────────────────────────────────────
         //
 
-        // Meeting hours of previous classes on this day
-        const csForFaculty = t.classSchedules.filter(
-            cs2 => cs2.feedback.facultyMember.id === fs.facultyMember.id,
-        );
+        // Use this instead of t.classSchedules because t.classSchedules is not updated
+        // with previous schedulings; update the query every single time
+        const classSchedules = await ClassSchedule.find({
+            relations: ["feedback", "feedback.facultyMember"],
+            where: {
+                term: {
+                    id: t.id,
+                },
+            },
+        });
+
+        const csForFaculty = classSchedules
+            .filter(cs2 => Boolean(cs2.feedback))
+            .filter(cs2 => cs2.feedback.facultyMember.id === fs.facultyMember.id);
 
         const subjectsForFaculty = _.uniqBy(csForFaculty.map(c => c.subject), "id");
 
@@ -225,6 +240,7 @@ export default class SchedulerController implements Controller {
         const prepsCanTake = subjectsForFaculty.length < MAXIMUM_PREPS || assignedToSameSubject;
 
         if (!prepsCanTake) {
+            console.log("Unassignable because more preps than 2", prepsCanTake);
             return UNASSIGNABLE;
         } else if (assignedToSameSubject) {
             score += BASE_POINTS;
@@ -246,6 +262,7 @@ export default class SchedulerController implements Controller {
             );
 
         if (isThirdConsecutive) {
+            console.log("THIRD CONSECUTIVE YO");
             return UNASSIGNABLE; // if it's the third consecutive, do not consider
         }
 
@@ -254,9 +271,12 @@ export default class SchedulerController implements Controller {
         //
 
         if (classHoursOfTheDay.includes(cs.meetingHours)) {
+            console.log("CONFLICTING YO");
             return UNASSIGNABLE;
             // if the faculty is assigned to a class on this day, on the time slot
             // we cannot consider because people can't split themselves
+        } else {
+            console.log("Class hours", classHoursOfTheDay, cs.meetingHours);
         }
 
         //
@@ -278,24 +298,37 @@ export default class SchedulerController implements Controller {
     }
 
     public async makeSchedule(term: Term) {
-        const promises = term.classSchedules
+        const css = await term.classSchedules
             // sort by meeting hours
             // third consecutive restriction check won't work without this sort
             .sort((csa, csb) => compareMeetingHours(csa.meetingHours, csb.meetingHours))
             // Only unassigned class schedules
-            .filter(cs => cs.feedback !== undefined)
-            .map(async cs => {
-                const candidates = await this.candidatesForClassSchedule(cs, term);
-                cs.feedback = FacultyMemberClassFeedback.create({
-                    status: FeedbackStatus.Pending,
-                    facultyMember: candidates[0].faculty,
-                    classSchedule: cs,
-                });
+            .filter(cs => !Boolean(cs.feedback));
 
-                await cs.feedback.save();
-                await cs.save();
+        console.log(css.length);
+
+        for (const cs of css) {
+            const candidates = await this.candidatesForClassSchedule(cs, term);
+
+            if (candidates.length === 0) {
+                console.log(`For ${cs.section} ${cs.subject.name}, no one is good enough`);
+                return;
+            }
+
+            cs.feedback = FacultyMemberClassFeedback.create({
+                status: FeedbackStatus.Pending,
+                facultyMember: candidates[0].faculty,
+                classSchedule: cs,
             });
 
-        await Promise.all(promises);
+            console.log(
+                `Class schedule ${cs.section} ${cs.subject.name} is being assigned ${
+                    candidates[0].faculty.id
+                } with a score of ${candidates[0].score}`,
+            );
+
+            await cs.feedback.save();
+            await cs.save();
+        }
     }
 }
