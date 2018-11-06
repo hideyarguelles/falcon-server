@@ -161,7 +161,17 @@ export default class TermController implements Controller {
     }
 
     async getFacultyMembers(termId: number): Promise<FacultyLoadingFacultyMemberItem[]> {
-        const term = await this.findTermById(termId);
+        const term = await this.findTermById(termId, {
+            relations: [
+                "timeConstraints",
+                "timeConstraints.facultyMember",
+                "classSchedules",
+                "classSchedules.subject",
+                "classSchedules.feedback",
+                "classSchedules.feedback.facultyMember",
+            ],
+        });
+
         const fms = await FacultyMember.find({
             where: {
                 activity: ActivityType.Active,
@@ -169,43 +179,23 @@ export default class TermController implements Controller {
             relations: ["user"],
         });
 
-        const facultyMembers = await Promise.all(
-            fms.map(
-                async fm =>
-                    ({
-                        facultyId: fm.id,
-                        firstName: fm.user.firstName,
-                        lastName: fm.user.lastName,
-                        pnuId: fm.pnuId,
-                        type: fm.type,
+        const facultyMembers = fms.map(
+            fm =>
+                ({
+                    facultyId: fm.id,
+                    firstName: fm.user.firstName,
+                    lastName: fm.user.lastName,
+                    pnuId: fm.pnuId,
+                    type: fm.type,
 
-                        classSchedules: await ClassSchedule.find({
-                            relations: ["feedback", "subject"],
-                            where: {
-                                feedback: {
-                                    facultyMember: {
-                                        id: fm.id,
-                                    },
-                                },
-                                term: {
-                                    id: term.id,
-                                },
-                            },
-                        }),
+                    classSchedules: term.classSchedules
+                        .filter(cs => Boolean(cs.feedback))
+                        .filter(cs => cs.feedback.facultyMember.id === fm.id),
 
-                        timeConstraints: await TimeConstraint.find({
-                            relations: ["facultyMember", "facultyMember.user"],
-                            where: {
-                                facultyMember: {
-                                    id: fm.id,
-                                },
-                                term: {
-                                    id: term.id,
-                                },
-                            },
-                        }),
-                    } as FacultyLoadingFacultyMemberItem),
-            ),
+                    timeConstraints: term.timeConstraints.filter(
+                        tc => tc.facultyMember.id === fm.id,
+                    ),
+                } as FacultyLoadingFacultyMemberItem),
         );
 
         facultyMembers.forEach(fm => {
@@ -216,45 +206,39 @@ export default class TermController implements Controller {
     }
 
     async getMySchedule(termId: number, user: User): Promise<FacultyLoadingFacultyMemberItem> {
-        const term = await this.findTermById(termId);
-        const facultyMember = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
-        if (!facultyMember) {
+        const term = await this.findTermById(termId, {
+            relations: [
+                "timeConstraints",
+                "timeConstraints.facultyMember",
+                "classSchedules",
+                "classSchedules.subject",
+                "classSchedules.feedback",
+                "classSchedules.feedback.facultyMember",
+            ],
+        });
+        const fm = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
+
+        if (!fm) {
             throw new EntityNotFoundError(
                 "Could not find corresponding faculty member for current user",
             );
         }
 
-        const classSchedules = await ClassSchedule.find({
-            where: {
-                term,
-                feedback: {
-                    facultyMember,
-                },
-            },
-            relations: [
-                "subject",
-                "feedback",
-                "feedback.facultyMember",
-                "feedback.facultyMember.user",
-            ],
-        });
+        const classSchedules = term.classSchedules
+            .filter(cs => Boolean(cs.feedback))
+            .filter(cs => cs.feedback.facultyMember.id === fm.id);
 
-        const timeConstraints = await TimeConstraint.find({
-            where: {
-                term,
-                facultyMember,
-            },
-        });
+        const timeConstraints = term.timeConstraints.filter(tc => tc.facultyMember.id === fm.id);
 
         return {
-            facultyId: facultyMember.id,
-            firstName: facultyMember.user.firstName,
-            lastName: facultyMember.user.lastName,
-            pnuId: facultyMember.pnuId,
-            type: facultyMember.type,
+            facultyId: fm.id,
+            firstName: fm.user.firstName,
+            lastName: fm.user.lastName,
+            pnuId: fm.pnuId,
+            type: fm.type,
             classSchedules,
             timeConstraints,
-            loadAmountStatus: getStatusForLoadAmount(facultyMember.type, classSchedules.length),
+            loadAmountStatus: getStatusForLoadAmount(fm.type, classSchedules.length),
         };
     }
 

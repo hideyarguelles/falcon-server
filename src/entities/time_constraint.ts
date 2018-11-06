@@ -1,7 +1,7 @@
+import { IsEnum } from "class-validator";
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MeetingDays, MeetingHours } from "../enums";
 import { FacultyMember, Term } from "./";
-import { IsEnum } from "class-validator";
 
 @Entity()
 export default class TimeConstraint extends BaseEntity {
