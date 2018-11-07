@@ -4,7 +4,7 @@ import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../ent
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
-import { ActivityType, TermStatus } from "../enums";
+import { ActivityType, TermStatus, FeedbackStatus } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
@@ -38,6 +38,8 @@ const formatClassSchedule = cs => ({
               type: cs.feedback.facultyMember.type,
           },
 });
+
+type FeedbackForm = { [key: number]: FeedbackStatus };
 
 export default class TermController implements Controller {
     async findTermById(id: number, options?: FindOneOptions): Promise<Term> {
@@ -266,6 +268,15 @@ export default class TermController implements Controller {
             );
         }
 
+        await TimeConstraint.delete({
+            facultyMember: {
+                id: facultyMember.id
+            },
+            term: {
+                id: termId
+            }
+        });
+
         const tcs = form.timeConstraints.map((tc: any) =>
             TimeConstraint.create({
                 meetingHours: tc.meetingHours,
@@ -278,5 +289,23 @@ export default class TermController implements Controller {
 
         await Promise.all(tcs.map(async tc => await tc.save()));
         return tcs;
+    }
+
+    async setFeedback(
+        termId: number,
+        feedback: FeedbackForm,
+        user: User,
+    ): Promise<FacultyLoadingFacultyMemberItem> {
+        const classSchedules = await ClassSchedule.findByIds(Object.keys(feedback), {
+            relations: ["feedback"],
+        });
+
+        for (const cs of classSchedules) {
+            cs.feedback.status = feedback[cs.id];
+            await cs.feedback.save();
+            await cs.save();
+        }
+
+        return await this.getMySchedule(termId, user);
     }
 }
