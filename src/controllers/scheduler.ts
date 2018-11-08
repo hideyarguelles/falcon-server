@@ -76,6 +76,7 @@ export default class SchedulerController implements Controller {
                 "presentations",
                 "instructionalMaterials",
                 "extensionWorks",
+                "user"
             ],
         });
 
