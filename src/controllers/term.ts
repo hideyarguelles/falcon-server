@@ -13,6 +13,7 @@ import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
 import SchedulerController from "./scheduler";
+import FacultyProfile from "../interfaces/faculty_profile";
 
 const formatClassSchedule = cs => ({
     id: cs.id,
@@ -270,11 +271,11 @@ export default class TermController implements Controller {
 
         await TimeConstraint.delete({
             facultyMember: {
-                id: facultyMember.id
+                id: facultyMember.id,
             },
             term: {
-                id: termId
-            }
+                id: termId,
+            },
         });
 
         const tcs = form.timeConstraints.map((tc: any) =>
@@ -307,5 +308,39 @@ export default class TermController implements Controller {
         }
 
         return await this.getMySchedule(termId, user);
+    }
+
+    async getRecommendedFaculties(
+        classScheduleId: number,
+        termId: number,
+    ): Promise<FacultyProfile[]> {
+        const classSchedule = await ClassSchedule.findOne(classScheduleId, {
+            relations: ["subject"],
+        });
+        const term = await this.findTermById(termId, {
+            relations: [
+                "externalLoads",
+                "classSchedules",
+                "classSchedules.subject",
+                "timeConstraints",
+                "timeConstraints.facultyMember",
+            ],
+        });
+
+        const candidates = await new SchedulerController().candidatesForClassSchedule(
+            classSchedule,
+            term,
+        );
+        return candidates.map(c => ({
+            id: c.faculty.id,
+            sex: c.faculty.sex,
+            type: c.faculty.type,
+            activity: c.faculty.activity,
+            birthDate: c.faculty.birthDate,
+            pnuId: c.faculty.pnuId,
+            firstName: c.faculty.user.firstName,
+            lastName: c.faculty.user.lastName,
+            email: c.faculty.user.email,
+        }));
     }
 }
