@@ -102,4 +102,12 @@ export default class TermView extends View<TermController> {
             ctx.body = ms;
         });
     };
+
+    getRecommendedFaculties = async (ctx: Context): Promise<void> => {
+        const { classScheduleId, termId } = ctx.params;
+        await this.controller.getRecommendedFaculties(classScheduleId, termId).then(rf => {
+            ctx.status = status.OK;
+            ctx.body = rf;
+        });
+    };
 }
