@@ -110,4 +110,12 @@ export default class TermView extends View<TermController> {
             ctx.body = rf;
         });
     };
+
+    setFaculty = async (ctx: Context) => {
+        const { classScheduleId, termId, facultyId } = ctx.params;
+        await this.controller.setFaculty(termId, classScheduleId, facultyId).then(cs => {
+            ctx.status = status.OK;
+            ctx.body = cs;
+        });
+    };
 }
