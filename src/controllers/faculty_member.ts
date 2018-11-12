@@ -6,9 +6,23 @@ import { UserForm } from "../entities/forms/user";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
-import { FeedbackStatus } from "../enums";
+import { FeedbackStatus, ActivityType } from "../enums";
 import * as _ from "lodash";
 import FacultyProfile from "../interfaces/faculty_profile";
+
+function facultyMemberToProfile(fm) {
+    return {
+        id: fm.id,
+        sex: fm.sex,
+        type: fm.type,
+        activity: fm.activity,
+        birthDate: fm.birthDate,
+        pnuId: fm.pnuId,
+        firstName: fm.user.firstName,
+        lastName: fm.user.lastName,
+        email: fm.user.email,
+    };
+}
 
 export default class FacultyMemberController implements Controller {
     async findById(id: number, options?: FindOneOptions): Promise<FacultyMember> {
@@ -68,17 +82,18 @@ export default class FacultyMemberController implements Controller {
             relations: ["user"],
         });
 
-        return fms.map(fm => ({
-            id: fm.id,
-            sex: fm.sex,
-            type: fm.type,
-            activity: fm.activity,
-            birthDate: fm.birthDate,
-            pnuId: fm.pnuId,
-            firstName: fm.user.firstName,
-            lastName: fm.user.lastName,
-            email: fm.user.email,
-        }));
+        return fms.map(facultyMemberToProfile);
+    }
+
+    async getAllActiveFaculties(): Promise<FacultyProfile[]> {
+        const fms = await FacultyMember.find({
+            where: {
+                activity: ActivityType.Active,
+            },
+            relations: ["user"],
+        });
+
+        return fms.map(facultyMemberToProfile);
     }
 
     async getTaughtSubjects(facultyId: number): Promise<{ [key: string]: number }> {
