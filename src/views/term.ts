@@ -113,7 +113,7 @@ export default class TermView extends View<TermController> {
 
         let allFaculties = await new FacultyMemberController().getAllActiveFaculties();
         allFaculties = allFaculties.filter(
-            f => !Boolean(recommendations.findIndex(r => r.id === f.id)),
+            f => recommendations.findIndex(r => r.id === f.id) === -1,
         );
 
         ctx.status = status.OK;
