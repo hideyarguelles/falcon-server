@@ -2,6 +2,7 @@ import * as status from "http-status-codes";
 import { Context } from "koa";
 import TermController from "../controllers/term";
 import View from "../interfaces/view";
+import FacultyMemberController from "../controllers/faculty_member";
 
 export default class TermView extends View<TermController> {
     getAll = async (ctx: Context): Promise<void> => {
@@ -105,10 +106,21 @@ export default class TermView extends View<TermController> {
 
     getRecommendedFaculties = async (ctx: Context): Promise<void> => {
         const { classScheduleId, termId } = ctx.params;
-        await this.controller.getRecommendedFaculties(classScheduleId, termId).then(rf => {
-            ctx.status = status.OK;
-            ctx.body = rf;
-        });
+        const recommendations = await this.controller.getRecommendedFaculties(
+            classScheduleId,
+            termId,
+        );
+
+        let allFaculties = await new FacultyMemberController().getAllActiveFaculties();
+        allFaculties = allFaculties.filter(
+            f => !Boolean(recommendations.findIndex(r => r.id === f.id)),
+        );
+
+        ctx.status = status.OK;
+        ctx.body = {
+            recommendations,
+            allFaculties,
+        };
     };
 
     setFaculty = async (ctx: Context) => {
