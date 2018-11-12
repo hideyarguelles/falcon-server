@@ -110,7 +110,11 @@ export default class TermView extends View<TermController> {
             classScheduleId,
             termId,
         );
-        const allFaculties = await new FacultyMemberController().getAllActiveFaculties();
+
+        let allFaculties = await new FacultyMemberController().getAllActiveFaculties();
+        allFaculties = allFaculties.filter(
+            f => !Boolean(recommendations.findIndex(r => r.id === f.id)),
+        );
 
         ctx.status = status.OK;
         ctx.body = {
