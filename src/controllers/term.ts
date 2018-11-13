@@ -1,17 +1,10 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
-import {
-    ClassSchedule,
-    FacultyMember,
-    Term,
-    TimeConstraint,
-    User,
-    FacultyMemberClassFeedback,
-} from "../entities";
+import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Term, TimeConstraint, User } from "../entities";
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
-import { ActivityType, TermStatus, FeedbackStatus } from "../enums";
+import { ActivityType, FeedbackStatus, TermStatus } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
 import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
@@ -19,8 +12,8 @@ import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
-import SchedulerController from "./scheduler";
 import FacultyProfile from "../interfaces/faculty_profile";
+import SchedulerController from "./scheduler";
 
 const formatClassSchedule = cs => ({
     id: cs.id,
@@ -88,14 +81,7 @@ export default class TermController implements Controller {
     }
 
     async advance(): Promise<Term> {
-        const t = await Term.findOne({
-            where: {
-                status: Not(TermStatus.Archived),
-            },
-        });
-        const potentialNextStatus = nextStatus(t.status);
-
-        if (potentialNextStatus === TermStatus.Published) {
+        async function clearForPublishing() {
             const faculties = await FacultyMember.find({
                 activity: ActivityType.Active,
             });
@@ -109,6 +95,36 @@ export default class TermController implements Controller {
             if (unassignedCount > 0) {
                 throw new Error(`Cannot publish schedule: ${unassignedCount} still unassigned`);
             }
+        }
+
+        async function clearForScheduling() {
+            const [_, classSchedulesCount] = await ClassSchedule.findAndCount({
+                where: {
+                    term: {
+                        id: t.id,
+                    },
+                },
+            });
+
+            if (classSchedulesCount === 0) {
+                throw new Error(`Cannot move to scheduling: No classes in term`);
+            }
+        }
+
+        const t = await Term.findOne({
+            where: {
+                status: Not(TermStatus.Archived),
+            },
+        });
+        const potentialNextStatus = nextStatus(t.status);
+
+        switch (potentialNextStatus) {
+            case TermStatus.Published:
+                await clearForPublishing();
+                break;
+            case TermStatus.Scheduling:
+                await clearForScheduling();
+                break;
         }
 
         t.status = potentialNextStatus;
