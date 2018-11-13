@@ -11,8 +11,8 @@ export interface IConfig {
 }
 
 
-const { DB_USERNAME, DB_PASSWORD, DB_NAME, DB_URL, DB_PORT } = process.env;
-const databaseUrl = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}:${DB_PORT}/${DB_NAME}`;
+const { DB_USERNAME, DB_PASSWORD, DB_NAME, DB_URL, DB_PORT, DEMO_DB_URL, MODE } = process.env;
+const databaseUrl = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${MODE === "demo" ? DEMO_DB_URL : DB_URL}:${DB_PORT}/${DB_NAME}`;
 
 const config = {
     port: process.env.PORT || 3000,
