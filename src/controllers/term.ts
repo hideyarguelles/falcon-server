@@ -1,6 +1,13 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
-import { ClassSchedule, FacultyMember, Term, TimeConstraint, User } from "../entities";
+import {
+    ClassSchedule,
+    FacultyMember,
+    Term,
+    TimeConstraint,
+    User,
+    FacultyMemberClassFeedback,
+} from "../entities";
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Subject from "../entities/subject";
@@ -308,6 +315,31 @@ export default class TermController implements Controller {
         }
 
         return await this.getMySchedule(termId, user);
+    }
+
+    async setFaculty(
+        termId: number,
+        classScheduleId: number,
+        facultyId: number,
+    ): Promise<FacultyLoadingClassScheduleItem> {
+        const classSchedule = await ClassSchedule.findOne(classScheduleId, {
+            relations: ["subject"],
+        });
+        const facultyMember = await FacultyMember.findOne(facultyId, {
+            relations: ["user"],
+        });
+
+        const fmcf = FacultyMemberClassFeedback.create({
+            facultyMember,
+            classSchedule,
+            status: FeedbackStatus.Pending,
+        });
+
+        classSchedule.feedback = fmcf;
+        await fmcf.save();
+        await classSchedule.save();
+
+        return formatClassSchedule(classSchedule);
     }
 
     async getRecommendedFaculties(

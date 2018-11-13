@@ -113,7 +113,7 @@ export default class TermView extends View<TermController> {
 
         let allFaculties = await new FacultyMemberController().getAllActiveFaculties();
         allFaculties = allFaculties.filter(
-            f => !Boolean(recommendations.findIndex(r => r.id === f.id)),
+            f => recommendations.findIndex(r => r.id === f.id) === -1,
         );
 
         ctx.status = status.OK;
@@ -121,5 +121,13 @@ export default class TermView extends View<TermController> {
             recommendations,
             allFaculties,
         };
+    };
+
+    setFaculty = async (ctx: Context) => {
+        const { classScheduleId, termId, facultyId } = ctx.params;
+        await this.controller.setFaculty(termId, classScheduleId, facultyId).then(cs => {
+            ctx.status = status.OK;
+            ctx.body = cs;
+        });
     };
 }

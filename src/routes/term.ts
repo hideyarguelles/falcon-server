@@ -15,6 +15,7 @@ export default new Router()
     .get("/:termId/class-schedules", termView.getClassSchedules)
     .post("/:termId/class-schedules", termView.addClassSchedule)
     .get("/:termId/class-schedules/:classScheduleId/", termView.getRecommendedFaculties)
+    .post("/:termId/class-schedules/:classScheduleId/set-faculty/:facultyId", termView.setFaculty)
     .post("/auto-assign", termView.autoAssign)
     .post("/advance", termView.advance)
     .post("/regress", termView.regress);
