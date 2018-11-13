@@ -93,7 +93,25 @@ export default class TermController implements Controller {
                 status: Not(TermStatus.Archived),
             },
         });
-        t.status = nextStatus(t.status);
+        const potentialNextStatus = nextStatus(t.status);
+
+        if (potentialNextStatus === TermStatus.Published) {
+            const faculties = await FacultyMember.find({
+                activity: ActivityType.Active,
+            });
+            const scheduleController = new SchedulerController();
+            let unassignedCount: any = faculties.map(
+                async f => await scheduleController.numberOfAssignments(f, t),
+            );
+            unassignedCount = await Promise.all(unassignedCount);
+            unassignedCount = unassignedCount.filter(c => c === 0).length;
+
+            if (unassignedCount > 0) {
+                throw new Error(`Cannot publish schedule: ${unassignedCount} still unassigned`);
+            }
+        }
+
+        t.status = potentialNextStatus;
         await t.save();
         return t;
     }
