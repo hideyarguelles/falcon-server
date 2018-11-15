@@ -69,16 +69,42 @@ interface ICandidate {
 
 export default class SchedulerController implements Controller {
     public async candidatesForClassSchedule(cs: ClassSchedule, term: Term): Promise<ICandidate[]> {
-        const faculties = await FacultyMember.find({
+        let faculties = await FacultyMember.find({
             relations: [
                 "degrees",
                 "recognitions",
                 "presentations",
                 "instructionalMaterials",
                 "extensionWorks",
-                "user"
+                "user",
             ],
         });
+
+        //
+        // ─── Ensure full time faculties get assigned first ────────────────────────────────────────────────────────────
+        //
+
+        const fullTimeFaculties = faculties.filter(f => f.type !== FacultyMemberType.PartTime);
+        let fullTimeFacultiesHaveMinium = true;
+
+        for (const f of fullTimeFaculties) {
+            const loadCount = await this.numberOfAssignments(f, term);
+            const loadingLimit = FacultyMemberTypeLoadingLimit.get(f.type)!;
+
+            // Everyone must be at least minimum
+            if (loadCount < loadingLimit.minimum) {
+                fullTimeFacultiesHaveMinium = false;
+                break;
+            }
+        }
+
+        if (!fullTimeFacultiesHaveMinium) {
+            faculties = fullTimeFaculties;
+        }
+
+        //
+        // ─── Calculate scores ────────────────────────────────────────────────────────────
+        //
 
         const facultyScores = faculties.map(f => new FacultyScore(f));
 
