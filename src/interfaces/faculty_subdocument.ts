@@ -16,4 +16,7 @@ export default abstract class FacultySubdocumentEntity extends BaseEntity {
     @ArrayUnique()
     @IsArray()
     associatedPrograms: Program[];
+
+    @Column()
+    ongoing: boolean;
 }
