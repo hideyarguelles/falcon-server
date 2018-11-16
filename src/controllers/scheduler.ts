@@ -1,18 +1,22 @@
-import {
-    FacultyMember,
-    Term,
-    ClassSchedule,
-    FacultyMemberClassFeedback,
-    TimeConstraint,
-} from "../entities";
-import { FacultyMemberType, MeetingHours, FeedbackStatus, SubjectCategory } from "../enums";
-import Program from "../enums/program";
 import * as _ from "lodash";
+import {
+    ClassSchedule,
+    Degree,
+    ExtensionWork,
+    FacultyMember,
+    FacultyMemberClassFeedback,
+    InstructionalMaterial,
+    Presentation,
+    Recognition,
+    Term,
+} from "../entities";
 import Subject from "../entities/subject";
+import { FacultyMemberType, FeedbackStatus, MeetingHours, SubjectCategory } from "../enums";
+import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
+import { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
+import Program from "../enums/program";
 import Controller from "../interfaces/controller";
 import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
-import { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
-import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
 
 const MAXIMUM_PREPS = 2;
 const UNASSIGNABLE = -1;
@@ -34,9 +38,27 @@ class FacultyScore {
             ...this.facultyMember.instructionalMaterials,
             ...this.facultyMember.extensionWorks,
         ];
+
         subdocuments.forEach(s => {
+            console.log("Typeof s", typeof s);
             if (s.associatedPrograms.includes(program)) {
-                score++;
+                switch (typeof s) {
+                    case Degree.name:
+                        score += 250;
+                        return;
+                    case InstructionalMaterial.name:
+                        score += 200;
+                        return;
+                    case Presentation.name:
+                        score += 150;
+                        return;
+                    case ExtensionWork.name:
+                        score += 100;
+                        return;
+                    case Recognition.name:
+                        score += 50;
+                        return;
+                }
             }
         });
         return score;
