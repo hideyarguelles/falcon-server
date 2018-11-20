@@ -363,6 +363,23 @@ export default class TermController implements Controller {
             relations: ["user"],
         });
 
+        // Unassign from conflicts
+        const conflicts = await ClassSchedule.find({
+            where: {
+                meetingDays: classSchedule.meetingDays,
+                meetingHours: classSchedule.meetingHours,
+                term: {
+                    id: termId
+                }
+            }
+        });
+
+        const conflictsPromise = conflicts.map(async cs => {
+            await FacultyMemberClassFeedback.remove(cs.feedback);
+            cs.feedback = null;
+            await cs.save();
+        })
+
         const fmcf = FacultyMemberClassFeedback.create({
             facultyMember,
             classSchedule,
@@ -371,6 +388,7 @@ export default class TermController implements Controller {
 
         classSchedule.feedback = fmcf;
         await fmcf.save();
+        await Promise.all(conflictsPromise);
         await classSchedule.save();
 
         return formatClassSchedule(classSchedule);
