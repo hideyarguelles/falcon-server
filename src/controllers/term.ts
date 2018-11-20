@@ -3,6 +3,7 @@ import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
 import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Term, TimeConstraint, User } from "../entities";
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
+import Notice from "../entities/notice";
 import Subject from "../entities/subject";
 import { ActivityType, FeedbackStatus, TermStatus } from "../enums";
 import { getStatusForLoadAmount } from "../enums/load_amount_status";
@@ -15,7 +16,7 @@ import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_facul
 import FacultyProfile from "../interfaces/faculty_profile";
 import SchedulerController from "./scheduler";
 
-const formatClassSchedule = cs => ({
+const formatClassSchedule = (cs: ClassSchedule) => ({
     id: cs.id,
     meetingDays: cs.meetingDays,
     meetingHours: cs.meetingHours,
@@ -37,7 +38,16 @@ const formatClassSchedule = cs => ({
               lastName: cs.feedback.facultyMember.user.lastName,
               pnuId: cs.feedback.facultyMember.pnuId,
               type: cs.feedback.facultyMember.type,
+              feedback: cs.feedback.status,
           },
+});
+
+const formatNotice = (n: Notice) => ({
+    id: n.id,
+    message: n.message,
+    facultyId: n.facultyMember.id,
+    facultyFirstName: n.facultyMember.user.firstName,
+    facultyLastName: n.facultyMember.user.lastName,
 });
 
 type FeedbackForm = { [key: number]: FeedbackStatus };
@@ -67,17 +77,25 @@ export default class TermController implements Controller {
         return await Term.find();
     }
 
-    async get(id: number): Promise<Term> {
-        return await this.findTermById(id, {
+    async get(id: number) {
+        const term = await this.findTermById(id, {
             relations: [
                 "classSchedules",
                 "classSchedules.subject",
                 "classSchedules.feedback",
                 "classSchedules.feedback.facultyMember",
+                "classSchedules.feedback.facultyMember.user",
                 "timeConstraints",
                 "timeConstraints.facultyMember",
+                "notices",
+                "notices.facultyMember",
+                "notices.facultyMember.user",
             ],
         });
+        return {
+            ...term,
+            classSchedules: term.classSchedules.map(formatClassSchedule),
+        };
     }
 
     async advance(): Promise<Term> {
@@ -331,6 +349,33 @@ export default class TermController implements Controller {
 
         await Promise.all(tcs.map(async tc => await tc.save()));
         return tcs;
+    }
+
+    async getNotices(termId: Term) {
+        const notices = await Notice.find({
+            relations: ["faculty", "faculty.user"],
+            where: {
+                term: {
+                    id: termId,
+                },
+            },
+        });
+
+        return notices.map(formatNotice);
+    }
+
+    async setNotice(termId: number, user: User, message: string) {
+        const term = await this.findTermById(termId);
+        const facultyMember = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
+
+        const notice = Notice.create({
+            term,
+            facultyMember,
+            message,
+        });
+
+        await notice.save();
+        return notice;
     }
 
     async setFeedback(
