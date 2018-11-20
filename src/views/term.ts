@@ -131,21 +131,21 @@ export default class TermView extends View<TermController> {
         });
     };
 
-    // getNotices = async (ctx: Context) => {
-    //     const { termId } = ctx.params;
-    //     await this.controller.getNotices(termId).then(n => {
-    //         ctx.status = status.OK;
-    //         ctx.body = n;
-    //     });
-    // };
+    getNotices = async (ctx: Context) => {
+        const { termId } = ctx.params;
+        await this.controller.getNotices(termId).then(n => {
+            ctx.status = status.OK;
+            ctx.body = n;
+        });
+    };
 
-    // setNotice = async (ctx: Context) => {
-    //     const { termId } = ctx.params;
-    //     const { user } = ctx.state;
-    //     const { message } = ctx.request.body;
-    //     await this.controller.setNotice(termId, user, message).then(n => {
-    //         ctx.status = status.OK;
-    //         ctx.body = n;
-    //     });
-    // };
+    setNotice = async (ctx: Context) => {
+        const { termId } = ctx.params;
+        const { user } = ctx.state;
+        const { message } = ctx.request.body;
+        await this.controller.setNotice(termId, user, message).then(n => {
+            ctx.status = status.OK;
+            ctx.body = n;
+        });
+    };
 }
