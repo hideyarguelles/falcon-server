@@ -20,6 +20,7 @@ import {
 } from "./";
 import FacultyMemberClassFeedback from "./feedback";
 import ExternalLoad from "./external_load";
+import Notice from "./notice";
 
 @Entity()
 export default class FacultyMember extends BaseEntity {
@@ -91,4 +92,7 @@ export default class FacultyMember extends BaseEntity {
 
     @OneToMany((type?: any) => Degree, (d: Degree) => d.facultyMember)
     degrees: Degree[];
+
+    @OneToMany((type?: any) => Notice, (n: Notice) => n.facultyMember)
+    notices: Notice[];
 }

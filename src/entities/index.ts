@@ -7,6 +7,7 @@ export { default as InstructionalMaterial } from "./faculty_subdocuments/instruc
 export { default as Presentation } from "./faculty_subdocuments/presentation";
 export { default as Recognition } from "./faculty_subdocuments/recognition";
 export { default as FacultyMemberClassFeedback } from "./feedback";
+export { default as Notice } from "./notice";
 export { default as Subject } from "./subject";
 export { default as Term } from "./term";
 export { default as TimeConstraint } from "./time_constraint";
