@@ -1,9 +1,10 @@
 import { IsEnum } from "class-validator";
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { OrdinalTerm, TermStatus } from "../enums";
 import ClassSchedule from "./class_schedule";
 import ExternalLoad from "./external_load";
 import TimeConstraint from "./time_constraint";
+import Notice from "./notice";
 
 @Entity()
 export default class Term extends BaseEntity {
@@ -35,4 +36,8 @@ export default class Term extends BaseEntity {
     @ManyToMany((type?: any) => ExternalLoad, (sl: ExternalLoad) => sl.term)
     @JoinTable()
     externalLoads: ExternalLoad[];
+
+    @ManyToOne((type?: any) => Notice, (n: Notice) => n.term)
+    @JoinTable()
+    notices: Notice[];
 }
