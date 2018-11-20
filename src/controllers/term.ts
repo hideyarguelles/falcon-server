@@ -378,6 +378,11 @@ export default class TermController implements Controller {
         return notice;
     }
 
+    async removeNotice(termId: number, noticeId: number) {
+        const notice = await Notice.findOne(noticeId);
+        await Notice.remove(notice);
+    }
+
     async setFeedback(
         termId: number,
         feedback: FeedbackForm,
