@@ -1,5 +1,4 @@
 import { validate } from "class-validator";
-import { BaseEntity } from "typeorm";
 import {
     Degree,
     ExtensionWork,
@@ -16,9 +15,11 @@ import { RecognitionForm } from "../entities/faculty_subdocuments/recognition";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
+import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
 import FacultyMemberController from "./faculty_member";
 
-export abstract class FacultySubdocumentController<S extends BaseEntity, F> implements Controller {
+export abstract class FacultySubdocumentController<S extends FacultySubdocumentEntity, F>
+    implements Controller {
     abstract createFromForm(form: F, fm: FacultyMember): S;
     abstract async findById(id: number): Promise<S>;
 
@@ -53,6 +54,13 @@ export abstract class FacultySubdocumentController<S extends BaseEntity, F> impl
     async remove(id: number): Promise<void> {
         const entity = await this.findById(id);
         await entity.remove();
+    }
+
+    async toggleOngoing(id: number): Promise<S> {
+        const entity = await this.findById(id);
+        entity.ongoing = !entity.ongoing;
+        await entity.save();
+        return entity;
     }
 }
 
