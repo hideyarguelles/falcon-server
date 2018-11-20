@@ -23,6 +23,7 @@ const makeRouterForSubdocument = (prefix: string, view: FacultySubdocumentView<a
         .prefix(prefix)
         .post("/", view.add)
         .put(`/:${view.paramId}`, view.update)
+        .put(`/:${view.paramId}/toggle-ongoing`, view.toggleOngoing)
         .delete(`/:${view.paramId}`, view.remove);
 
 const degreeView = new DegreeView(new DegreeController());
