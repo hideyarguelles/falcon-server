@@ -94,14 +94,21 @@ export default class TermController implements Controller {
                 "classSchedules.feedback.facultyMember.user",
                 "timeConstraints",
                 "timeConstraints.facultyMember",
-                "notices",
-                "notices.facultyMember",
-                "notices.facultyMember.user",
             ],
         });
+        const notices = await Notice.find({
+            relations: ["facultyMember", "facultyMember.user"],
+            where: {
+                term: {
+                    id: term.id,
+                },
+            },
+        });
+
         return {
             ...term,
             classSchedules: term.classSchedules.map(formatClassSchedule),
+            notices: notices.map(formatNotice),
         };
     }
 
