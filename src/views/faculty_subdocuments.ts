@@ -46,6 +46,14 @@ export abstract class FacultySubdocumentView<
             ctx.status = status.NO_CONTENT;
         });
     };
+
+    toggleOngoing = async (ctx: Context): Promise<void> => {
+        const subdocumentId = ctx.params[this.paramId];
+        await this.controller.toggleOngoing(subdocumentId).then(subdocument => {
+            ctx.status = status.OK;
+            ctx.body = subdocument;
+        });
+    };
 }
 
 export class DegreeView extends FacultySubdocumentView<DegreeController> {
