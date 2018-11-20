@@ -376,9 +376,9 @@ export default class TermController implements Controller {
 
         const conflictsPromise = conflicts.map(async cs => {
             await FacultyMemberClassFeedback.remove(cs.feedback);
-            cs.feedback = null;
+            cs.feedback = undefined;
             await cs.save();
-        })
+        });
 
         const fmcf = FacultyMemberClassFeedback.create({
             facultyMember,
