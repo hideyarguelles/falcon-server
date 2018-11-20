@@ -402,28 +402,30 @@ export default class TermController implements Controller {
         facultyId: number,
     ): Promise<FacultyLoadingClassScheduleItem> {
         const classSchedule = await ClassSchedule.findOne(classScheduleId, {
-            relations: ["subject"],
+            relations: ["subject", "term"],
         });
         const facultyMember = await FacultyMember.findOne(facultyId, {
             relations: ["user"],
         });
 
         // Unassign from conflicts
-        const conflicts = await ClassSchedule.find({
+        const [conflicts, conflictsCount] = await ClassSchedule.findAndCount({
+            relations: ["feedback", "feedback.facultyMember"],
             where: {
                 meetingDays: classSchedule.meetingDays,
                 meetingHours: classSchedule.meetingHours,
                 term: {
-                    id: termId
-                }
-            }
+                    id: classSchedule.term.id,
+                },
+            },
         });
 
-        const conflictsPromise = conflicts.map(async cs => {
-            await FacultyMemberClassFeedback.remove(cs.feedback);
-            cs.feedback = null;
-            await cs.save();
-        })
+        console.log("Conflicts", conflictsCount);
+        const conflictsPromise = conflicts
+            .filter(cs => cs.feedback && cs.feedback.facultyMember.id === facultyMember.id)
+            .map(async cs => {
+                await FacultyMemberClassFeedback.remove(cs.feedback);
+            });
 
         const fmcf = FacultyMemberClassFeedback.create({
             facultyMember,
