@@ -303,12 +303,13 @@ export default class SchedulerController implements Controller {
             .filter(cs2 => cs2.meetingDays === availability.meetingDays)
             .map(cs2 => cs2.meetingHours);
 
+        const tmhb = twoMeetingHoursBefore(cs.meetingHours);
+
         const isThirdConsecutive =
             cs.meetingHours !== MeetingHours.AM_7_9 &&
             cs.meetingHours !== MeetingHours.AM_9_11 &&
-            classHoursOfTheDay.every(
-                cohtd => !twoMeetingHoursBefore(cs.meetingHours).includes(cohtd),
-            );
+            classHoursOfTheDay.includes(tmhb[0]) &&
+            classHoursOfTheDay.includes(tmhb[1]);
 
         if (isThirdConsecutive) {
             console.log("THIRD CONSECUTIVE YO");
