@@ -1,6 +1,13 @@
 import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
-import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Term, TimeConstraint, User } from "../entities";
+import {
+    ClassSchedule,
+    FacultyMember,
+    FacultyMemberClassFeedback,
+    Term,
+    TimeConstraint,
+    User,
+} from "../entities";
 import { ClassScheduleForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Notice from "../entities/notice";
@@ -87,31 +94,55 @@ export default class TermController implements Controller {
                 "classSchedules.feedback.facultyMember.user",
                 "timeConstraints",
                 "timeConstraints.facultyMember",
-                "notices",
-                "notices.facultyMember",
-                "notices.facultyMember.user",
             ],
         });
+        const notices = await Notice.find({
+            relations: ["facultyMember", "facultyMember.user"],
+            where: {
+                term: {
+                    id: term.id,
+                },
+            },
+        });
+
         return {
             ...term,
             classSchedules: term.classSchedules.map(formatClassSchedule),
+            notices: notices.map(formatNotice),
         };
     }
 
-    async advance(): Promise<Term> {
-        async function clearForPublishing() {
+    async advance() {
+        async function clearForPublishing(t: Term) {
             const faculties = await FacultyMember.find({
                 activity: ActivityType.Active,
             });
             const scheduleController = new SchedulerController();
-            let unassignedCount: any = faculties.map(
+            let unassignedFacultyCount: any = faculties.map(
                 async f => await scheduleController.numberOfAssignments(f, t),
             );
-            unassignedCount = await Promise.all(unassignedCount);
-            unassignedCount = unassignedCount.filter(c => c === 0).length;
+            unassignedFacultyCount = await Promise.all(unassignedFacultyCount);
+            unassignedFacultyCount = unassignedFacultyCount.filter(c => c === 0).length;
 
-            if (unassignedCount > 0) {
-                throw new Error(`Cannot publish schedule: ${unassignedCount} still unassigned`);
+            if (unassignedFacultyCount > 0) {
+                throw new Error(
+                    `Cannot publish schedule: ${unassignedFacultyCount} faculty members still unassigned`,
+                );
+            }
+
+            let unassignedClassesCount: any = await ClassSchedule.find({
+                where: {
+                    term: {
+                        id: t.id,
+                    },
+                },
+            });
+            unassignedClassesCount = unassignedClassesCount.filter(c => !Boolean(c.feedback))
+                .length;
+            if (unassignedClassesCount > 0) {
+                throw new Error(
+                    `Cannot publish schedule: ${unassignedClassesCount} classes still unassigned`,
+                );
             }
         }
 
@@ -138,7 +169,7 @@ export default class TermController implements Controller {
 
         switch (potentialNextStatus) {
             case TermStatus.Published:
-                await clearForPublishing();
+                await clearForPublishing(t);
                 break;
             case TermStatus.Scheduling:
                 await clearForScheduling();
@@ -147,10 +178,10 @@ export default class TermController implements Controller {
 
         t.status = potentialNextStatus;
         await t.save();
-        return t;
+        return this.get(t.id);
     }
 
-    async regress(): Promise<Term> {
+    async regress() {
         const t = await Term.findOne({
             where: {
                 status: Not(TermStatus.Archived),
@@ -158,7 +189,7 @@ export default class TermController implements Controller {
         });
         t.status = previousStatus(t.status);
         await t.save();
-        return t;
+        return this.get(t.id);
     }
 
     async add(form: TermForm): Promise<Term> {

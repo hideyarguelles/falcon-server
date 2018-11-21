@@ -149,6 +149,7 @@ export default class TermView extends View<TermController> {
         });
     };
 
+
     removeNotice = async (ctx: Context) => {
         const { noticeId, termId } = ctx.params;
         await this.controller.removeNotice(termId, noticeId).then(() => {
