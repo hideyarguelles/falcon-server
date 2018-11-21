@@ -7,6 +7,11 @@ import {
     Term,
     TimeConstraint,
     User,
+    Degree,
+    Presentation,
+    InstructionalMaterial,
+    ExtensionWork,
+    Recognition,
 } from "../entities";
 import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
@@ -19,7 +24,9 @@ import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
-import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
+import FacultyLoadingFacultyMemberItem, {
+    OngoingSubdocumentItem,
+} from "../interfaces/faculty_loading_faculty_member";
 import FacultyProfile from "../interfaces/faculty_profile";
 import SchedulerController from "./scheduler";
 
@@ -56,6 +63,59 @@ const formatNotice = (n: Notice) => ({
     facultyFirstName: n.facultyMember.user.firstName,
     facultyLastName: n.facultyMember.user.lastName,
 });
+
+const formatFacultyLoadingFacultyMemberItem = (
+    fm: FacultyMember,
+    classSchedules: ClassSchedule[],
+    timeConstraints: TimeConstraint[],
+): FacultyLoadingFacultyMemberItem => {
+    const loadAmountStatus = getStatusForLoadAmount(fm.type, classSchedules.length);
+    const ongoingSubdocuments = [
+        ...fm.degrees,
+        ...fm.presentations,
+        ...fm.instructionalMaterials,
+        ...fm.extensionWorks,
+        ...fm.recognitions,
+    ]
+        .filter(subd => subd.ongoing)
+        .map(subd => {
+            let type = subd.constructor.name;
+
+            switch (type) {
+                case Degree.name:
+                    type = "Degree";
+                    break;
+                case Presentation.name:
+                    type = "Presentation";
+                    break;
+                case InstructionalMaterial.name:
+                    type = "Instructional Material";
+                    break;
+                case ExtensionWork.name:
+                    type = "Extension Work";
+                    break;
+                case Recognition.name:
+                    type = "Recognition";
+                    break;
+            }
+
+            return {
+                title: subd.title,
+                type,
+            };
+        });
+    return {
+        facultyId: fm.id,
+        firstName: fm.user.firstName,
+        lastName: fm.user.lastName,
+        pnuId: fm.pnuId,
+        type: fm.type,
+        classSchedules,
+        timeConstraints,
+        loadAmountStatus,
+        ongoingSubdocuments,
+    };
+};
 
 type FeedbackForm = { [key: number]: FeedbackStatus };
 
@@ -278,33 +338,25 @@ export default class TermController implements Controller {
             where: {
                 activity: ActivityType.Active,
             },
-            relations: ["user"],
+            relations: [
+                "user",
+                "degrees",
+                "recognitions",
+                "presentations",
+                "instructionalMaterials",
+                "extensionWorks",
+            ],
         });
 
-        const facultyMembers = fms.map(
-            fm =>
-                ({
-                    facultyId: fm.id,
-                    firstName: fm.user.firstName,
-                    lastName: fm.user.lastName,
-                    pnuId: fm.pnuId,
-                    type: fm.type,
-
-                    classSchedules: term.classSchedules
-                        .filter(cs => Boolean(cs.feedback))
-                        .filter(cs => cs.feedback.facultyMember.id === fm.id),
-
-                    timeConstraints: term.timeConstraints.filter(
-                        tc => tc.facultyMember.id === fm.id,
-                    ),
-                } as FacultyLoadingFacultyMemberItem),
-        );
-
-        facultyMembers.forEach(fm => {
-            fm.loadAmountStatus = getStatusForLoadAmount(fm.type, fm.classSchedules.length);
+        return fms.map(fm => {
+            const classSchedules = term.classSchedules
+                .filter(cs => Boolean(cs.feedback))
+                .filter(cs => cs.feedback.facultyMember.id === fm.id);
+            const timeConstraints = term.timeConstraints.filter(
+                tc => tc.facultyMember.id === fm.id,
+            );
+            return formatFacultyLoadingFacultyMemberItem(fm, classSchedules, timeConstraints);
         });
-
-        return facultyMembers;
     }
 
     async getMySchedule(termId: number, user: User): Promise<FacultyLoadingFacultyMemberItem> {
@@ -318,7 +370,17 @@ export default class TermController implements Controller {
                 "classSchedules.feedback.facultyMember",
             ],
         });
-        const fm = await FacultyMember.findOne({ where: { user }, relations: ["user"] });
+        const fm = await FacultyMember.findOne({
+            where: { user },
+            relations: [
+                "user",
+                "degrees",
+                "recognitions",
+                "presentations",
+                "instructionalMaterials",
+                "extensionWorks",
+            ],
+        });
 
         if (!fm) {
             throw new EntityNotFoundError(
@@ -332,16 +394,7 @@ export default class TermController implements Controller {
 
         const timeConstraints = term.timeConstraints.filter(tc => tc.facultyMember.id === fm.id);
 
-        return {
-            facultyId: fm.id,
-            firstName: fm.user.firstName,
-            lastName: fm.user.lastName,
-            pnuId: fm.pnuId,
-            type: fm.type,
-            classSchedules,
-            timeConstraints,
-            loadAmountStatus: getStatusForLoadAmount(fm.type, classSchedules.length),
-        };
+        return formatFacultyLoadingFacultyMemberItem(fm, classSchedules, timeConstraints);
     }
 
     async getClassSchedules(termId: number): Promise<FacultyLoadingClassScheduleItem[]> {
