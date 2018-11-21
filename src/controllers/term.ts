@@ -8,7 +8,7 @@ import {
     TimeConstraint,
     User,
 } from "../entities";
-import { ClassScheduleForm } from "../entities/forms/class_schedule";
+import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Notice from "../entities/notice";
 import Subject from "../entities/subject";
@@ -235,22 +235,31 @@ export default class TermController implements Controller {
 
     async addClassSchedule(
         termId: number,
-        form: ClassScheduleForm,
-    ): Promise<FacultyLoadingClassScheduleItem> {
+        form: ParentClassSchedulesForm,
+    ): Promise<FacultyLoadingClassScheduleItem[]> {
         const term = await this.findTermById(termId, { relations: ["classSchedules"] });
-        const subject = await this.findSubjectById(form.subject);
-        const newClassSchedule = ClassSchedule.create({ ...form, subject, term });
+        const subject = await this.findSubjectById(form.subjectId);
 
-        const formErrors = await validate(newClassSchedule);
-        if (formErrors.length > 0) {
+        const classSchedules = form.classes.map(child =>
+            ClassSchedule.create({ ...child, subject, term }),
+        );
+
+        let formErrors: any = classSchedules.map(async cs => await validate(cs));
+        formErrors = await Promise.all(formErrors);
+
+        if (!formErrors.every(fe => fe.length === 0)) {
             throw new ValidationFailError(formErrors);
         }
 
-        term.classSchedules.push(newClassSchedule);
-        await newClassSchedule.save();
+        const promises = classSchedules.map(async cs => {
+            term.classSchedules.push(cs);
+            await cs.save();
+        });
+
+        await Promise.all(promises);
         await term.save();
 
-        return formatClassSchedule(newClassSchedule);
+        return classSchedules.map(formatClassSchedule);
     }
 
     async getFacultyMembers(termId: number): Promise<FacultyLoadingFacultyMemberItem[]> {
