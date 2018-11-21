@@ -1,10 +1,14 @@
 import { MeetingDays, MeetingHours } from "../../enums";
 
-export interface ClassScheduleForm {
+export interface ChildClassScheduleForm {
     meetingDays: MeetingDays;
     meetingHours: MeetingHours;
     room: string;
     course: string;
     section: string;
-    subject: number;
+}
+
+export interface ParentClassSchedulesForm {
+    subjectId: number;
+    classes: ChildClassScheduleForm[];
 }
