@@ -307,7 +307,6 @@ export default class SchedulerController implements Controller {
             classHoursOfTheDay.includes(tmhb[1]);
 
         if (isThirdConsecutive) {
-            console.log("THIRD CONSECUTIVE YO");
             return UNASSIGNABLE; // if it's the third consecutive, do not consider
         }
 
@@ -316,13 +315,10 @@ export default class SchedulerController implements Controller {
         //
 
         if (classHoursOfTheDay.includes(cs.meetingHours)) {
-            console.log("CONFLICTING YO");
             return UNASSIGNABLE;
             // if the faculty is assigned to a class on this day, on the time slot
             // we cannot consider because people can't split themselves
-        } else {
-            console.log("Class hours", classHoursOfTheDay, cs.meetingHours);
-        }
+        } 
 
         //
         // ─── Preference consideration ────────────────────────────────────────────────────────────
@@ -350,7 +346,7 @@ export default class SchedulerController implements Controller {
             return score;
         }
 
-        score *= timesTaughtToScore(timesTaught); // Every time the subject was taught, that's 100 points
+        score += timesTaughtToScore(timesTaught); // Every time the subject was taught, that's 100 points
 
         return score;
     }
@@ -374,6 +370,8 @@ export default class SchedulerController implements Controller {
                 console.log(`For ${cs.section} ${cs.subject.name}, no one is good enough`);
                 continue;
             }
+
+            console.log("Candidates", candidates);
 
             cs.feedback = FacultyMemberClassFeedback.create({
                 status: FeedbackStatus.Pending,
