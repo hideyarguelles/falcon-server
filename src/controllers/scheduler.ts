@@ -21,6 +21,7 @@ import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
 const MAXIMUM_PREPS = 2;
 const UNASSIGNABLE = -1;
 const BASE_POINTS = 100;
+const DIMINISHING_MULTIPLIER = 4 / 5;
 
 class FacultyScore {
     public facultyMember: FacultyMember;
@@ -40,24 +41,18 @@ class FacultyScore {
         ];
 
         subdocuments.forEach(s => {
-            console.log("Typeof s", typeof s);
             if (s.associatedPrograms.includes(program)) {
                 switch (typeof s) {
                     case Degree.name:
-                        score += 250;
-                        return;
+                        score += BASE_POINTS;
                     case InstructionalMaterial.name:
-                        score += 200;
-                        return;
+                        score += BASE_POINTS;
                     case Presentation.name:
-                        score += 150;
-                        return;
+                        score += BASE_POINTS;
                     case ExtensionWork.name:
-                        score += 100;
-                        return;
+                        score += BASE_POINTS;
                     case Recognition.name:
-                        score += 50;
-                        return;
+                        score += BASE_POINTS;
                 }
             }
         });
@@ -65,22 +60,22 @@ class FacultyScore {
     }
 
     get rankScore() {
+        let score = 0;
         switch (this.facultyMember.type) {
             case FacultyMemberType.Instructor:
-                return 350;
+                score += BASE_POINTS;
             case FacultyMemberType.AssistantProfessor:
-                return 300;
+                score += BASE_POINTS;
             case FacultyMemberType.AssociateProfessor:
-                return 250;
+                score += BASE_POINTS;
             case FacultyMemberType.FullProfessor:
-                return 200;
+                score += BASE_POINTS;
             case FacultyMemberType.Adjunct:
-                return 150;
+                score += BASE_POINTS;
             case FacultyMemberType.PartTime:
-                return 100;
-            default:
-                return 0;
+                score += BASE_POINTS;
         }
+        return score;
     }
 }
 
@@ -342,7 +337,20 @@ export default class SchedulerController implements Controller {
         //
 
         const timesTaught = await this.numberOfTimesTaught(fs.facultyMember, cs.subject);
-        score *= timesTaught * BASE_POINTS; // Every time the subject was taught, that's 100 points
+
+        // Applies diminishing returns per times taught
+        function timesTaughtToScore(count) {
+            let score = 0;
+
+            for (let i = 1; i <= count; i++) {
+                const gain = BASE_POINTS * Math.pow(DIMINISHING_MULTIPLIER, i - 1);
+                score += gain;
+            }
+
+            return score;
+        }
+
+        score *= timesTaughtToScore(timesTaught); // Every time the subject was taught, that's 100 points
 
         return score;
     }
@@ -355,14 +363,16 @@ export default class SchedulerController implements Controller {
             // Only unassigned class schedules
             .filter(cs => !Boolean(cs.feedback));
 
-        console.log(css.length);
-
         for (const cs of css) {
+            console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
+
             const candidates = await this.candidatesForClassSchedule(cs, term);
+
+            console.log(`Found ${candidates.length} candidates`);
 
             if (candidates.length === 0) {
                 console.log(`For ${cs.section} ${cs.subject.name}, no one is good enough`);
-                return;
+                continue;
             }
 
             cs.feedback = FacultyMemberClassFeedback.create({
