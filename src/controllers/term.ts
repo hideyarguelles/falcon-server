@@ -334,10 +334,7 @@ export default class TermController implements Controller {
             ],
         });
 
-        const fms = await FacultyMember.find({
-            where: {
-                activity: ActivityType.Active,
-            },
+        const facultyFindOptions = {
             relations: [
                 "user",
                 "degrees",
@@ -346,7 +343,16 @@ export default class TermController implements Controller {
                 "instructionalMaterials",
                 "extensionWorks",
             ],
-        });
+        };
+
+        // If archived, show all available faculty members
+        if (term.status !== TermStatus.Archived) {
+            facultyFindOptions["where"] = {
+                activity: ActivityType.Active,
+            };
+        }
+
+        const fms = await FacultyMember.find(facultyFindOptions);
 
         return fms.map(fm => {
             const classSchedules = term.classSchedules
