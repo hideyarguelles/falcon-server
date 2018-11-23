@@ -1,15 +1,5 @@
 import * as _ from "lodash";
-import {
-    ClassSchedule,
-    Degree,
-    ExtensionWork,
-    FacultyMember,
-    FacultyMemberClassFeedback,
-    InstructionalMaterial,
-    Presentation,
-    Recognition,
-    Term,
-} from "../entities";
+import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Term } from "../entities";
 import Subject from "../entities/subject";
 import { FacultyMemberType, FeedbackStatus, MeetingHours, SubjectCategory } from "../enums";
 import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
@@ -239,11 +229,6 @@ export default class SchedulerController implements Controller {
         //
 
         const loadCount = await this.numberOfAssignments(fs.facultyMember, t);
-
-        if (loadCount > 0) {
-            console.log("Load count", loadCount);
-        }
-
         const loadingLimit = FacultyMemberTypeLoadingLimit.get(fs.facultyMember.type)!;
 
         // Strictly do not assign above maximum
@@ -277,11 +262,17 @@ export default class SchedulerController implements Controller {
         //
         // ─── Availability considerations ────────────────────────────────────────────────────────────
         //
-        const availability = t.timeConstraints
-            .filter(tc => tc.facultyMember.id === fs.facultyMember.id)
-            .find(tc => cs.meetingDays === tc.meetingDays && cs.meetingHours === tc.meetingHours);
+        const facultyMemberAvailabilities = t.timeConstraints.filter(
+            tc => tc.facultyMember.id === fs.facultyMember.id,
+        );
 
-        if (!availability) {
+        const availability = facultyMemberAvailabilities.find(
+            tc => cs.meetingDays === tc.meetingDays && cs.meetingHours === tc.meetingHours,
+        );
+
+        const isAvailable = facultyMemberAvailabilities.length === 0 || availability !== undefined;
+
+        if (!isAvailable) {
             // console.log("Unassignable because is not available or preferred");
             return UNASSIGNABLE;
         }
@@ -334,8 +325,8 @@ export default class SchedulerController implements Controller {
         // ─── Third consecutive special cases ────────────────────────────────────────────────────────────
         //
 
-        const classHoursOfTheDay = csForFaculty
-            .filter(cs2 => cs2.meetingDays === availability.meetingDays)
+        const classHoursOfTheDays = csForFaculty
+            .filter(cs2 => cs2.meetingDays === cs.meetingDays)
             .map(cs2 => cs2.meetingHours);
 
         const tmhb = twoMeetingHoursBefore(cs.meetingHours);
@@ -343,8 +334,8 @@ export default class SchedulerController implements Controller {
         const isThirdConsecutive =
             cs.meetingHours !== MeetingHours.AM_7_9 &&
             cs.meetingHours !== MeetingHours.AM_9_11 &&
-            classHoursOfTheDay.includes(tmhb[0]) &&
-            classHoursOfTheDay.includes(tmhb[1]);
+            classHoursOfTheDays.includes(tmhb[0]) &&
+            classHoursOfTheDays.includes(tmhb[1]);
 
         if (isThirdConsecutive) {
             return UNASSIGNABLE; // if it's the third consecutive, do not consider
@@ -354,7 +345,7 @@ export default class SchedulerController implements Controller {
         // ─── Schedule conflicting considerations ────────────────────────────────────────────────────────────
         //
 
-        if (classHoursOfTheDay.includes(cs.meetingHours)) {
+        if (classHoursOfTheDays.includes(cs.meetingHours)) {
             return UNASSIGNABLE;
             // if the faculty is assigned to a class on this day, on the time slot
             // we cannot consider because people can't split themselves
@@ -364,7 +355,7 @@ export default class SchedulerController implements Controller {
         // ─── Preference consideration ────────────────────────────────────────────────────────────
         //
 
-        if (availability.isPreferred) {
+        if (availability && availability.isPreferred) {
             score += BASE_POINTS;
         }
 
