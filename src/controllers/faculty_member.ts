@@ -6,7 +6,7 @@ import { UserForm } from "../entities/forms/user";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
-import { FeedbackStatus, ActivityType } from "../enums";
+import { FeedbackStatus, ActivityType, TermStatus } from "../enums";
 import * as _ from "lodash";
 import FacultyProfile from "../interfaces/faculty_profile";
 
@@ -97,17 +97,17 @@ export default class FacultyMemberController implements Controller {
     }
 
     async getTaughtSubjects(facultyId: number): Promise<{ [key: string]: number }> {
-        const cs = await ClassSchedule.find({
-            relations: ["subject"],
-            where: {
-                feedback: {
-                    status: FeedbackStatus.Accepted,
-                    facultyMember: {
-                        id: facultyId,
-                    },
-                },
-            },
+        let cs = await ClassSchedule.find({
+            relations: ["subject", "feedback", "feedback.facultyMember", "term"],
         });
+
+        cs = cs.filter(
+            c =>
+                c.term.status === TermStatus.Archived &&
+                c.feedback &&
+                c.feedback.status === FeedbackStatus.Accepted &&
+                c.feedback.facultyMember.id === facultyId,
+        );
 
         const subjects = cs.map(cs => cs.subject.code);
         return _.countBy(subjects, s => s);

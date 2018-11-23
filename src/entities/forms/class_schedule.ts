@@ -10,5 +10,5 @@ export interface ChildClassScheduleForm {
 
 export interface ParentClassSchedulesForm {
     subjectId: number;
-    classes: ChildClassScheduleForm[];
+    classSchedules: ChildClassScheduleForm[];
 }
