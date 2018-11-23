@@ -22,6 +22,44 @@ const MAXIMUM_PREPS = 2;
 const UNASSIGNABLE = -1;
 const BASE_POINTS = 100;
 
+const PRESETS = {
+    TIMES_TAUGHT: {
+        multiplier: 4 / 5,
+        basePoints: BASE_POINTS,
+    },
+    DEGREE: {
+        multiplier: 4 / 5,
+        basePoints: BASE_POINTS * 5,
+    },
+    INSTRUCTIONAL_MATERIALS: {
+        multiplier: 1 / 2,
+        basePoints: BASE_POINTS * 4,
+    },
+    PRESENTATIONS: {
+        multiplier: 1 / 2,
+        basePoints: BASE_POINTS * 3,
+    },
+    EXTENSION_WORKS: {
+        multiplier: 1 / 2,
+        basePoints: BASE_POINTS * 2,
+    },
+    RECOGNITIONS: {
+        multiplier: 1 / 2,
+        basePoints: BASE_POINTS,
+    },
+};
+
+function scoreWithDiminishingReturns(count, { multiplier, basePoints }): number {
+    let score = 0;
+
+    for (let i = 1; i <= count; i++) {
+        const gain = basePoints * Math.pow(multiplier, i - 1);
+        score += gain;
+    }
+
+    return score;
+}
+
 class FacultyScore {
     public facultyMember: FacultyMember;
 
@@ -30,57 +68,52 @@ class FacultyScore {
     }
 
     calculateSubdocumentScore(program: Program): number {
-        let score = 0;
-        const subdocuments: FacultySubdocumentEntity[] = [
-            ...this.facultyMember.degrees,
-            ...this.facultyMember.recognitions,
-            ...this.facultyMember.presentations,
-            ...this.facultyMember.instructionalMaterials,
-            ...this.facultyMember.extensionWorks,
-        ];
+        function associatedCount(subdocuments: FacultySubdocumentEntity[]) {
+            return subdocuments.filter(s => s.associatedPrograms.includes(program)).length;
+        }
 
-        subdocuments.forEach(s => {
-            console.log("Typeof s", typeof s);
-            if (s.associatedPrograms.includes(program)) {
-                switch (typeof s) {
-                    case Degree.name:
-                        score += 250;
-                        return;
-                    case InstructionalMaterial.name:
-                        score += 200;
-                        return;
-                    case Presentation.name:
-                        score += 150;
-                        return;
-                    case ExtensionWork.name:
-                        score += 100;
-                        return;
-                    case Recognition.name:
-                        score += 50;
-                        return;
-                }
-            }
-        });
-        return score;
+        const {
+            degrees,
+            extensionWorks,
+            presentations,
+            instructionalMaterials,
+            recognitions,
+        } = this.facultyMember;
+        const degreeCount = associatedCount(degrees);
+        const extensionWorkCount = associatedCount(extensionWorks);
+        const presentationCount = associatedCount(presentations);
+        const instructionalMaterialCount = associatedCount(instructionalMaterials);
+        const recognitionCount = associatedCount(recognitions);
+
+        return (
+            scoreWithDiminishingReturns(degreeCount, PRESETS.DEGREE) +
+            scoreWithDiminishingReturns(extensionWorkCount, PRESETS.EXTENSION_WORKS) +
+            scoreWithDiminishingReturns(presentationCount, PRESETS.PRESENTATIONS) +
+            scoreWithDiminishingReturns(
+                instructionalMaterialCount,
+                PRESETS.INSTRUCTIONAL_MATERIALS,
+            ) +
+            scoreWithDiminishingReturns(recognitionCount, PRESETS.RECOGNITIONS)
+        );
     }
 
     get rankScore() {
+        let score = 0;
         switch (this.facultyMember.type) {
             case FacultyMemberType.Instructor:
-                return 350;
+                score += BASE_POINTS;
             case FacultyMemberType.AssistantProfessor:
-                return 300;
+                score += BASE_POINTS;
             case FacultyMemberType.AssociateProfessor:
-                return 250;
+                score += BASE_POINTS;
             case FacultyMemberType.FullProfessor:
-                return 200;
+                score += BASE_POINTS;
             case FacultyMemberType.Adjunct:
-                return 150;
+                score += BASE_POINTS;
             case FacultyMemberType.PartTime:
-                return 100;
-            default:
-                return 0;
+                score += BASE_POINTS;
         }
+        return score;
     }
 }
 
@@ -171,18 +204,15 @@ export default class SchedulerController implements Controller {
     }
 
     public async numberOfAssignments(fm: FacultyMember, t: Term) {
-        return await ClassSchedule.count({
+        const cs = await ClassSchedule.find({
+            relations: ["feedback", "feedback.facultyMember"],
             where: {
-                feedback: {
-                    facultyMember: {
-                        id: fm.id,
-                    },
-                },
                 term: {
                     id: t.id,
                 },
             },
         });
+        return cs.filter(cs => cs.feedback && cs.feedback.facultyMember.id === fm.id).length;
     }
 
     // Negative numbers means the faculty member is incompatible
@@ -209,6 +239,11 @@ export default class SchedulerController implements Controller {
         //
 
         const loadCount = await this.numberOfAssignments(fs.facultyMember, t);
+
+        if (loadCount > 0) {
+            console.log("Load count", loadCount);
+        }
+
         const loadingLimit = FacultyMemberTypeLoadingLimit.get(fs.facultyMember.type)!;
 
         // Strictly do not assign above maximum
@@ -312,7 +347,6 @@ export default class SchedulerController implements Controller {
             classHoursOfTheDay.includes(tmhb[1]);
 
         if (isThirdConsecutive) {
-            console.log("THIRD CONSECUTIVE YO");
             return UNASSIGNABLE; // if it's the third consecutive, do not consider
         }
 
@@ -321,12 +355,9 @@ export default class SchedulerController implements Controller {
         //
 
         if (classHoursOfTheDay.includes(cs.meetingHours)) {
-            console.log("CONFLICTING YO");
             return UNASSIGNABLE;
             // if the faculty is assigned to a class on this day, on the time slot
             // we cannot consider because people can't split themselves
-        } else {
-            console.log("Class hours", classHoursOfTheDay, cs.meetingHours);
         }
 
         //
@@ -342,7 +373,9 @@ export default class SchedulerController implements Controller {
         //
 
         const timesTaught = await this.numberOfTimesTaught(fs.facultyMember, cs.subject);
-        score *= timesTaught * BASE_POINTS; // Every time the subject was taught, that's 100 points
+
+        // Applies diminishing returns per times taught
+        score += scoreWithDiminishingReturns(timesTaught, PRESETS.TIMES_TAUGHT); // Every time the subject was taught, that's 100 points
 
         return score;
     }
@@ -355,15 +388,19 @@ export default class SchedulerController implements Controller {
             // Only unassigned class schedules
             .filter(cs => !Boolean(cs.feedback));
 
-        console.log(css.length);
-
         for (const cs of css) {
+            console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
+
             const candidates = await this.candidatesForClassSchedule(cs, term);
+
+            console.log(`Found ${candidates.length} candidates`);
 
             if (candidates.length === 0) {
                 console.log(`For ${cs.section} ${cs.subject.name}, no one is good enough`);
-                return;
+                continue;
             }
+
+            console.log("Candidates", candidates);
 
             cs.feedback = FacultyMemberClassFeedback.create({
                 status: FeedbackStatus.Pending,
