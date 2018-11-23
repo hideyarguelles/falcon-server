@@ -10,9 +10,25 @@ export interface IConfig {
     databaseUrl: string;
 }
 
+function url() {
+    const { MODE, DB_URL, DEMO_DB_URL, DEFENSE_DB_URL } = process.env;
+    
+    switch (MODE) {
+        case "demo":
+            return DEMO_DB_URL;
+        case "defense":
+            return DEFENSE_DB_URL;
+        default:
+            return DB_URL;
+    }
+}
 
-const { DB_USERNAME, DB_PASSWORD, DB_NAME, DB_URL, DB_PORT, DEMO_DB_URL, MODE } = process.env;
-const databaseUrl = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${MODE === "demo" ? DEMO_DB_URL : DB_URL}:${DB_PORT}/${DB_NAME}`;
+
+const { DB_USERNAME, DB_PASSWORD, DB_NAME, DB_PORT } = process.env;
+
+
+
+const databaseUrl = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${url()}:${DB_PORT}/${DB_NAME}`;
 
 const config = {
     port: process.env.PORT || 3000,
