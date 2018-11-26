@@ -12,6 +12,7 @@ import {
     InstructionalMaterial,
     ExtensionWork,
     Recognition,
+    ExternalLoad,
 } from "../entities";
 import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
@@ -68,6 +69,7 @@ const formatFacultyLoadingFacultyMemberItem = (
     fm: FacultyMember,
     classSchedules: ClassSchedule[],
     timeConstraints: TimeConstraint[],
+    hasExternalLoad: boolean,
 ): FacultyLoadingFacultyMemberItem => {
     const loadAmountStatus = getStatusForLoadAmount(fm.type, classSchedules.length);
     const ongoingSubdocuments = [
@@ -104,6 +106,7 @@ const formatFacultyLoadingFacultyMemberItem = (
                 type,
             };
         });
+
     return {
         facultyId: fm.id,
         firstName: fm.user.firstName,
@@ -114,6 +117,7 @@ const formatFacultyLoadingFacultyMemberItem = (
         timeConstraints,
         loadAmountStatus,
         ongoingSubdocuments,
+        hasExternalLoad,
     };
 };
 
@@ -356,15 +360,32 @@ export default class TermController implements Controller {
 
         const fms = await FacultyMember.find(facultyFindOptions);
 
-        return fms.map(fm => {
-            const classSchedules = term.classSchedules
-                .filter(cs => Boolean(cs.feedback))
-                .filter(cs => cs.feedback.facultyMember.id === fm.id);
-            const timeConstraints = term.timeConstraints.filter(
-                tc => tc.facultyMember.id === fm.id,
-            );
-            return formatFacultyLoadingFacultyMemberItem(fm, classSchedules, timeConstraints);
-        });
+        return await Promise.all(
+            fms.map(async fm => {
+                const classSchedules = term.classSchedules
+                    .filter(cs => Boolean(cs.feedback))
+                    .filter(cs => cs.feedback.facultyMember.id === fm.id);
+                const timeConstraints = term.timeConstraints.filter(
+                    tc => tc.facultyMember.id === fm.id,
+                );
+
+                const [_, externalLoadCount] = await ExternalLoad.findAndCount({
+                    term: {
+                        id: term.id,
+                    },
+                    facultyMember: {
+                        id: fm.id,
+                    },
+                });
+
+                return formatFacultyLoadingFacultyMemberItem(
+                    fm,
+                    classSchedules,
+                    timeConstraints,
+                    externalLoadCount !== 0,
+                );
+            }),
+        );
     }
 
     async getMySchedule(termId: number, user: User): Promise<FacultyLoadingFacultyMemberItem> {
@@ -402,7 +423,21 @@ export default class TermController implements Controller {
 
         const timeConstraints = term.timeConstraints.filter(tc => tc.facultyMember.id === fm.id);
 
-        return formatFacultyLoadingFacultyMemberItem(fm, classSchedules, timeConstraints);
+        const [_, externalLoadCount] = await ExternalLoad.findAndCount({
+            term: {
+                id: term.id,
+            },
+            facultyMember: {
+                id: fm.id,
+            },
+        });
+
+        return formatFacultyLoadingFacultyMemberItem(
+            fm,
+            classSchedules,
+            timeConstraints,
+            externalLoadCount !== 0,
+        );
     }
 
     async getClassSchedules(termId: number): Promise<FacultyLoadingClassScheduleItem[]> {
@@ -447,6 +482,22 @@ export default class TermController implements Controller {
                 facultyMember,
             }),
         );
+
+        const existing = await ExternalLoad.findOne({
+            facultyMember,
+            term,
+        });
+
+        if (form.hasExternalLoad) {
+            if (!existing) {
+                await ExternalLoad.create({
+                    facultyMember,
+                    term,
+                }).save();
+            }
+        } else {
+            await ExternalLoad.delete(existing);
+        }
 
         await Promise.all(tcs.map(async tc => await tc.save()));
         return tcs;
