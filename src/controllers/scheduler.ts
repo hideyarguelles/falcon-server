@@ -130,7 +130,7 @@ export default class SchedulerController implements Controller {
         //
 
         const fullTimeFaculties = faculties.filter(f => f.type !== FacultyMemberType.PartTime);
-        let fullTimeFacultiesHaveMinium = true;
+        let fullTimeFacultiesHaveMinimum = true;
 
         for (const f of fullTimeFaculties) {
             const loadCount = await this.numberOfAssignments(f, term);
@@ -138,12 +138,12 @@ export default class SchedulerController implements Controller {
 
             // Everyone must be at least minimum
             if (loadCount < loadingLimit.minimum) {
-                fullTimeFacultiesHaveMinium = false;
+                fullTimeFacultiesHaveMinimum = false;
                 break;
             }
         }
 
-        if (!fullTimeFacultiesHaveMinium) {
+        if (!fullTimeFacultiesHaveMinimum) {
             faculties = fullTimeFaculties;
         }
 
@@ -251,7 +251,8 @@ export default class SchedulerController implements Controller {
         );
 
         // If has external load, cannot obtain load above extra
-        if (hasExternalLoad && loadCount >= loadingLimit.extra) {
+        // If load amount is equal to extra, it is extra
+        if (hasExternalLoad && loadCount >= loadingLimit.extra - 1) {
             console.log(
                 "Unassignable because has external load and is above extra",
                 hasExternalLoad,
