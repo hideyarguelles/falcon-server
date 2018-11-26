@@ -191,14 +191,16 @@ export default class TermController implements Controller {
             }
 
             let unassignedClassesCount: any = await ClassSchedule.find({
+                relations: ["feedback"],
                 where: {
                     term: {
                         id: t.id,
                     },
                 },
             });
-            unassignedClassesCount = unassignedClassesCount.filter(c => !Boolean(c.feedback))
-                .length;
+
+            unassignedClassesCount = unassignedClassesCount.filter(c => !c.feedback).length;
+
             if (unassignedClassesCount > 0) {
                 throw new Error(
                     `Cannot publish schedule: ${unassignedClassesCount} classes still unassigned`,
@@ -300,7 +302,7 @@ export default class TermController implements Controller {
         const term = await this.findTermById(termId, { relations: ["classSchedules"] });
         const subject = await this.findSubjectById(form.subjectId);
 
-        const classSchedules = form.classes.map(child =>
+        const classSchedules = form.classSchedules.map(child =>
             ClassSchedule.create({ ...child, subject, term }),
         );
 
