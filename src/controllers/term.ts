@@ -495,7 +495,7 @@ export default class TermController implements Controller {
                     term,
                 }).save();
             }
-        } else {
+        } else if (existing) {
             await ExternalLoad.delete(existing);
         }
 
