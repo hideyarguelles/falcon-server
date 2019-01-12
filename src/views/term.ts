@@ -28,6 +28,13 @@ export default class TermView extends View<TermController> {
         });
     };
 
+    getFacultyMemberStats = async (ctx: Context): Promise<void> => {
+        await this.controller.facultyMemberStats().then(s => {
+            ctx.status = status.OK;
+            ctx.body = s;
+        });
+    }
+
     addClassSchedule = async (ctx: Context): Promise<void> => {
         const { termId } = ctx.params;
         const form = ctx.request.body;

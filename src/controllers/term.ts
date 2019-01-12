@@ -18,8 +18,8 @@ import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Notice from "../entities/notice";
 import Subject from "../entities/subject";
-import { ActivityType, FeedbackStatus, TermStatus } from "../enums";
-import { getStatusForLoadAmount } from "../enums/load_amount_status";
+import { ActivityType, FeedbackStatus, TermStatus, FacultyMemberType } from "../enums";
+import LoadAmountStatus, { getStatusForLoadAmount } from "../enums/load_amount_status";
 import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
@@ -174,6 +174,65 @@ export default class TermController implements Controller {
             classSchedules: term.classSchedules.map(formatClassSchedule),
             notices: notices.map(formatNotice),
         };
+    }
+
+    async facultyMemberStats() {
+        const term = await Term.findOne({
+            where: {
+                status: TermStatus.Scheduling,
+            },
+            relations: [
+                "externalLoads",
+                "classSchedules",
+                "classSchedules.feedback.facultyMember",
+                "classSchedules.subject",
+                "timeConstraints",
+                "timeConstraints.facultyMember",
+            ],
+        });
+
+        const stats = {
+            activity: {
+                active: 0,
+                inactive: 0,
+            },
+            load: {},
+            rank: {},
+        };
+
+        // Prefill with values for load
+        Object.keys(LoadAmountStatus).forEach(las => {
+            stats.load[las] = 0;
+        });
+
+        // Prefill with values for rank
+        Object.keys(FacultyMemberType).forEach(fmt => {
+            stats.rank[fmt] = 0;
+        });
+
+        const facultyMembers = await FacultyMember.find();
+
+        stats.activity.active = facultyMembers.filter(
+            f => f.activity === ActivityType.Active,
+        ).length;
+        stats.activity.inactive = facultyMembers.length - stats.activity.active;
+
+        facultyMembers.forEach(fm => {
+
+            // Count load status
+            const classes = term.classSchedules
+                .filter(cs => Boolean(cs.feedback))
+                .filter(cs => cs.feedback.facultyMember.id === fm.id);
+            
+            const status = getStatusForLoadAmount(fm.type, classes.length);
+            stats.load[status]++;
+
+        
+            // Count rank
+            stats.rank[fm.type]++;
+        });
+
+        return stats;
     }
 
     async advance() {

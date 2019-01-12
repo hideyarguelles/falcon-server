@@ -1,6 +1,6 @@
 import FacultyMemberType, { FacultyMemberTypeLoadingLimit } from "./faculty_member_type";
 
-enum LoadAmountStatus {
+export enum LoadAmountStatus {
     Unassigned = "Unassigned",
     Underloaded = "Underloaded",
     Adequate = "Adequate",
