@@ -4,7 +4,6 @@ enum FacultyMemberType {
     AssociateProfessor = "AssociateProfessor",
     FullProfessor = "FullProfessor",
     PartTime = "PartTime",
-    Adjunct = "Adjunct",
 }
 
 interface ILoadingLimits {
@@ -40,15 +39,6 @@ export const FacultyMemberTypeLoadingLimit = new Map<FacultyMemberType, ILoading
                    minimum: 2,
                    maximum: 2,
                    extra: 0,
-               },
-           ],
-
-           [
-               FacultyMemberType.Adjunct,
-               {
-                   minimum: 2,
-                   maximum: 2,
-                   extra: 2,
                },
            ],
 

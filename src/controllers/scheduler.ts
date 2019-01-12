@@ -98,8 +98,6 @@ class FacultyScore {
                 score += BASE_POINTS;
             case FacultyMemberType.FullProfessor:
                 score += BASE_POINTS;
-            case FacultyMemberType.Adjunct:
-                score += BASE_POINTS;
             case FacultyMemberType.PartTime:
                 score += BASE_POINTS;
         }
@@ -275,19 +273,6 @@ export default class SchedulerController implements Controller {
 
         if (!isAvailable) {
             // console.log("Unassignable because is not available or preferred");
-            return UNASSIGNABLE;
-        }
-
-        //
-        // ─── Adjunct special cases ────────────────────────────────────────────────────────────
-        //
-
-        // This does not allow assignment of adjunct members to major subjects, a business rule
-        if (
-            fs.facultyMember.type === FacultyMemberType.Adjunct &&
-            cs.subject.category !== SubjectCategory.General
-        ) {
-            console.log("Unassignable because they are adjunct being assigned to a major subject");
             return UNASSIGNABLE;
         }
 
