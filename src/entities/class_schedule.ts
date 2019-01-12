@@ -34,6 +34,9 @@ export default class ClassSchedule extends BaseEntity {
     @Column()
     section: string;
 
+    @Column()
+    studentYear: string;
+
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
