@@ -1,4 +1,4 @@
-enum FacultyMemberType {
+export enum FacultyMemberType {
     Instructor = "Instructor",
     AssistantProfessor = "AssistantProfessor",
     AssociateProfessor = "AssociateProfessor",
