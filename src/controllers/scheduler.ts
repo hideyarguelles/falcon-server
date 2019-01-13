@@ -1,12 +1,8 @@
 import * as _ from "lodash";
-import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Term } from "../entities";
-import Subject from "../entities/subject";
-import { FacultyMemberType, FeedbackStatus, MeetingHours, SubjectCategory } from "../enums";
-import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
-import { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
-import Program from "../enums/program";
-import Controller from "../interfaces/controller";
+import { ClassSchedule, FacultyMember, TimeConstraint } from "../entities";
+import { FacultyMemberType, FeedbackStatus } from "../enums";
 import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
+import MeetingHours, { twoMeetingHoursBefore } from "../enums/meeting_hours";
 
 const MAXIMUM_PREPS = 2;
 const UNASSIGNABLE = -1;
@@ -50,15 +46,50 @@ function scoreWithDiminishingReturns(count, { multiplier, basePoints }): number 
     return score;
 }
 
-class FacultyScore {
+class FacultyClassScheduleScore {
     public facultyMember: FacultyMember;
+    public classSchedule: ClassSchedule;
+    private classSchedules: ClassSchedule[];
+    public availabilities: TimeConstraint[];
+    public pros: string[] = [];
+    public cons: string[] = [];
+    public errors: string[] = [];
+    public score: number = 0;
 
-    constructor(fm: FacultyMember) {
-        this.facultyMember = fm;
+    get isAssignable() {
+        return this.errors.length === 0;
     }
 
-    calculateSubdocumentScore(program: Program): number {
+    constructor(
+        fm: FacultyMember,
+        cs: ClassSchedule,
+        css: ClassSchedule[],
+        availabilities: TimeConstraint[],
+    ) {
+        this.facultyMember = fm;
+        this.classSchedule = cs;
+        this.classSchedules = css;
+        this.availabilities = availabilities;
+    }
+
+    get classSchedulesForFaculty() {
+        return this.classSchedules
+            .filter(cs => Boolean(cs.feedback))
+            .filter(cs => cs.feedback.facultyMember.id === this.facultyMember.id);
+    }
+
+    async calculateScore() {
+        await Promise.all([
+            this.calculateSubdocumentScore(),
+            this.calculateRankScore(),
+            this.calculatePreparations(),
+            this.calculateScheduleCompatibility(),
+        ]);
+    }
+
+    async calculateSubdocumentScore() {
         function associatedCount(subdocuments: FacultySubdocumentEntity[]) {
+            const program = this.classSchedule.subject.program;
             return subdocuments.filter(s => s.associatedPrograms.includes(program)).length;
         }
 
@@ -69,13 +100,14 @@ class FacultyScore {
             instructionalMaterials,
             recognitions,
         } = this.facultyMember;
+
         const degreeCount = associatedCount(degrees);
         const extensionWorkCount = associatedCount(extensionWorks);
         const presentationCount = associatedCount(presentations);
         const instructionalMaterialCount = associatedCount(instructionalMaterials);
         const recognitionCount = associatedCount(recognitions);
 
-        return (
+        this.score +=
             scoreWithDiminishingReturns(degreeCount, PRESETS.DEGREE) +
             scoreWithDiminishingReturns(extensionWorkCount, PRESETS.EXTENSION_WORKS) +
             scoreWithDiminishingReturns(presentationCount, PRESETS.PRESENTATIONS) +
@@ -83,235 +115,48 @@ class FacultyScore {
                 instructionalMaterialCount,
                 PRESETS.INSTRUCTIONAL_MATERIALS,
             ) +
-            scoreWithDiminishingReturns(recognitionCount, PRESETS.RECOGNITIONS)
-        );
+            scoreWithDiminishingReturns(recognitionCount, PRESETS.RECOGNITIONS);
     }
 
-    get rankScore() {
-        let score = 0;
+    async calculateRankScore() {
+        let rankScore = 0;
         switch (this.facultyMember.type) {
             case FacultyMemberType.Instructor:
-                score += BASE_POINTS;
+                rankScore += BASE_POINTS;
             case FacultyMemberType.AssistantProfessor:
-                score += BASE_POINTS;
+                rankScore += BASE_POINTS;
             case FacultyMemberType.AssociateProfessor:
-                score += BASE_POINTS;
+                rankScore += BASE_POINTS;
             case FacultyMemberType.FullProfessor:
-                score += BASE_POINTS;
+                rankScore += BASE_POINTS;
             case FacultyMemberType.PartTime:
-                score += BASE_POINTS;
+                rankScore += BASE_POINTS;
         }
-        return score;
-    }
-}
-
-interface ICandidate {
-    faculty: FacultyMember;
-    score: number;
-}
-
-export default class SchedulerController implements Controller {
-    public async candidatesForClassSchedule(cs: ClassSchedule, term: Term): Promise<ICandidate[]> {
-        let faculties = await FacultyMember.find({
-            relations: [
-                "degrees",
-                "recognitions",
-                "presentations",
-                "instructionalMaterials",
-                "extensionWorks",
-                "user",
-            ],
-        });
-
-        //
-        // ─── Ensure full time faculties get assigned first ────────────────────────────────────────────────────────────
-        //
-
-        const fullTimeFaculties = faculties.filter(f => f.type !== FacultyMemberType.PartTime);
-        let fullTimeFacultiesHaveMinimum = true;
-
-        for (const f of fullTimeFaculties) {
-            const loadCount = await this.numberOfAssignments(f, term);
-            const loadingLimit = FacultyMemberTypeLoadingLimit.get(f.type)!;
-
-            // Everyone must be at least minimum
-            if (loadCount < loadingLimit.minimum) {
-                fullTimeFacultiesHaveMinimum = false;
-                break;
-            }
-        }
-
-        if (!fullTimeFacultiesHaveMinimum) {
-            faculties = fullTimeFaculties;
-        }
-
-        //
-        // ─── Calculate scores ────────────────────────────────────────────────────────────
-        //
-
-        const facultyScores = faculties.map(f => new FacultyScore(f));
-
-        const candidates = await Promise.all(
-            facultyScores.map(async fs => ({
-                faculty: fs.facultyMember,
-                score: await this.scoreForFacultyMember(term, fs, cs),
-            })),
-        );
-
-        // Scort highest to lowest
-        return candidates
-            .filter(c => c.score !== UNASSIGNABLE)
-            .sort((a, b) => {
-                if (a.score < b.score) {
-                    return -1;
-                }
-
-                if (a.score > b.score) {
-                    return 1;
-                }
-
-                return 0;
-            })
-            .reverse();
+        this.score += rankScore;
     }
 
-    public async numberOfTimesTaught(fm: FacultyMember, s: Subject) {
-        return await ClassSchedule.count({
-            where: {
-                subject: {
-                    id: s.id,
-                },
-                feedback: {
-                    facultyMember: {
-                        id: fm.id,
-                    },
-                    status: FeedbackStatus.Accepted,
-                },
-            },
-        });
-    }
-
-    public async numberOfAssignments(fm: FacultyMember, t: Term) {
-        const cs = await ClassSchedule.find({
-            relations: ["feedback", "feedback.facultyMember"],
-            where: {
-                term: {
-                    id: t.id,
-                },
-            },
-        });
-        return cs.filter(cs => cs.feedback && cs.feedback.facultyMember.id === fm.id).length;
-    }
-
-    // Negative numbers means the faculty member is incompatible
-    // The higher the score, the more compatible
-    public async scoreForFacultyMember(
-        t: Term,
-        fs: FacultyScore,
-        cs: ClassSchedule,
-    ): Promise<number> {
-        //
-        // ─── Initial score ────────────────────────────────────────────────────────────
-        //
-
-        let score = 0;
-
-        // Teacher type ranking considerations
-        score += fs.rankScore;
-
-        // Subdocument score for program
-        score += fs.calculateSubdocumentScore(cs.subject.program);
-
-        //
-        // ─── Loading count considerations ────────────────────────────────────────────────────────────
-        //
-
-        const loadCount = await this.numberOfAssignments(fs.facultyMember, t);
-        const loadingLimit = FacultyMemberTypeLoadingLimit.get(fs.facultyMember.type)!;
-
-        // Strictly do not assign above maximum
-        if (loadCount >= loadingLimit.maximum) {
-            console.log("Unassignable because above maximum load", loadCount, loadingLimit);
-            return UNASSIGNABLE;
-        }
-
-        // Boost the underloaded
-        if (loadCount < loadingLimit.minimum) {
-            score += BASE_POINTS;
-        }
-
-        //
-        // ─── Extra load considerations ────────────────────────────────────────────────────────────
-        //
-
-        const hasExternalLoad = Boolean(
-            t.externalLoads.find(el => el.facultyMember.id === fs.facultyMember.id),
+    async calculatePreparations() {
+        const subjectsForFaculty = _.uniqBy(
+            this.classSchedulesForFaculty.map(c => c.subject),
+            "id",
         );
 
-        // If has external load, cannot obtain load above extra
-        // If load amount is equal to extra, it is extra
-        if (hasExternalLoad && loadCount >= loadingLimit.extra - 1) {
-            console.log(
-                "Unassignable because has external load and is above extra",
-                hasExternalLoad,
-            );
-            return UNASSIGNABLE;
-        }
-
-        //
-        // ─── Availability considerations ────────────────────────────────────────────────────────────
-        //
-        const facultyMemberAvailabilities = t.timeConstraints.filter(
-            tc => tc.facultyMember.id === fs.facultyMember.id,
-        );
-
-        const availability = facultyMemberAvailabilities.find(
-            tc => cs.meetingDays === tc.meetingDays && cs.meetingHours === tc.meetingHours,
-        );
-
-        const isAvailable = facultyMemberAvailabilities.length === 0 || availability !== undefined;
-
-        if (!isAvailable) {
-            // console.log("Unassignable because is not available or preferred");
-            return UNASSIGNABLE;
-        }
-
-        //
-        // ─── Preparation considerations ────────────────────────────────────────────────────────────
-        //
-
-        // Use this instead of t.classSchedules because t.classSchedules is not updated
-        // with previous schedulings; update the query every single time
-        const classSchedules = await ClassSchedule.find({
-            relations: ["feedback", "feedback.facultyMember"],
-            where: {
-                term: {
-                    id: t.id,
-                },
-            },
-        });
-
-        const csForFaculty = classSchedules
-            .filter(cs2 => Boolean(cs2.feedback))
-            .filter(cs2 => cs2.feedback.facultyMember.id === fs.facultyMember.id);
-
-        const subjectsForFaculty = _.uniqBy(csForFaculty.map(c => c.subject), "id");
-
-        const assignedToSameSubject = subjectsForFaculty.includes(cs.subject);
+        const assignedToSameSubject = subjectsForFaculty.includes(this.classSchedule.subject);
         const prepsCanTake = subjectsForFaculty.length < MAXIMUM_PREPS || assignedToSameSubject;
 
         if (!prepsCanTake) {
-            console.log("Unassignable because more preps than 2", prepsCanTake);
-            return UNASSIGNABLE;
-        } else if (assignedToSameSubject) {
-            score += BASE_POINTS;
+            this.cons.push(`Already assigned to ${subjectsForFaculty.length} subjects`);
         }
 
-        //
-        // ─── Third consecutive special cases ────────────────────────────────────────────────────────────
-        //
+        if (assignedToSameSubject) {
+            this.pros.push("Already assigned to a class with this subject");
+        }
+    }
 
-        const classHoursOfTheDays = csForFaculty
+    async calculateScheduleCompatibility() {
+        const cs = this.classSchedule;
+
+        const classHoursOfTheDays = this.classSchedulesForFaculty
             .filter(cs2 => cs2.meetingDays === cs.meetingDays)
             .map(cs2 => cs2.meetingHours);
 
@@ -323,76 +168,55 @@ export default class SchedulerController implements Controller {
             classHoursOfTheDays.includes(tmhb[0]) &&
             classHoursOfTheDays.includes(tmhb[1]);
 
-        if (isThirdConsecutive) {
-            return UNASSIGNABLE; // if it's the third consecutive, do not consider
+        if (!isThirdConsecutive) {
+            this.errors.push("This class is the third consecutive");
         }
-
-        //
-        // ─── Schedule conflicting considerations ────────────────────────────────────────────────────────────
-        //
 
         if (classHoursOfTheDays.includes(cs.meetingHours)) {
-            return UNASSIGNABLE;
-            // if the faculty is assigned to a class on this day, on the time slot
-            // we cannot consider because people can't split themselves
+            this.errors.push(
+                "This class is found to be conflicting with another class of this time slot",
+            );
         }
-
-        //
-        // ─── Preference consideration ────────────────────────────────────────────────────────────
-        //
-
-        if (availability && availability.isPreferred) {
-            score += BASE_POINTS;
-        }
-
-        //
-        // ─── Experience considerations ────────────────────────────────────────────────────────────
-        //
-
-        const timesTaught = await this.numberOfTimesTaught(fs.facultyMember, cs.subject);
-
-        // Applies diminishing returns per times taught
-        score += scoreWithDiminishingReturns(timesTaught, PRESETS.TIMES_TAUGHT); // Every time the subject was taught, that's 100 points
-
-        return score;
     }
 
-    public async makeSchedule(term: Term) {
-        const css = await term.classSchedules
-            // sort by meeting hours
-            // third consecutive restriction check won't work without this sort
-            .sort((csa, csb) => compareMeetingHours(csa.meetingHours, csb.meetingHours))
-            // Only unassigned class schedules
-            .filter(cs => !Boolean(cs.feedback));
+    async calculateExperience() {
+        const timesTaught = await ClassSchedule.count({
+            where: {
+                subject: {
+                    id: this.classSchedule.subject.id,
+                },
+                feedback: {
+                    facultyMember: {
+                        id: this.facultyMember.id,
+                    },
+                    status: FeedbackStatus.Accepted,
+                },
+            },
+        });
 
-        for (const cs of css) {
-            console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
+        if (timesTaught > 0) {
+            this.pros.push(`Has taught this subject ${timesTaught} times before`);
+        }
 
-            const candidates = await this.candidatesForClassSchedule(cs, term);
+        this.score += scoreWithDiminishingReturns(timesTaught, PRESETS.TIMES_TAUGHT);
+    }
 
-            console.log(`Found ${candidates.length} candidates`);
+    async calculateAvailability() {
+        const availability = this.availabilities.find(
+            tc =>
+                this.classSchedule.meetingDays === tc.meetingDays &&
+                this.classSchedule.meetingHours === tc.meetingHours,
+        );
 
-            if (candidates.length === 0) {
-                console.log(`For ${cs.section} ${cs.subject.name}, no one is good enough`);
-                continue;
-            }
+        // Faculty members that did not submit any availability information is automatically available every time
+        const isAvailable = this.availabilities.length === 0 || availability !== undefined;
 
-            console.log("Candidates", candidates);
-
-            cs.feedback = FacultyMemberClassFeedback.create({
-                status: FeedbackStatus.Pending,
-                facultyMember: candidates[0].faculty,
-                classSchedule: cs,
-            });
-
-            console.log(
-                `Class schedule ${cs.section} ${cs.subject.name} is being assigned ${
-                    candidates[0].faculty.id
-                } with a score of ${candidates[0].score}`,
-            );
-
-            await cs.feedback.save();
-            await cs.save();
+        if (!isAvailable) {
+            // console.log("Unassignable because is not available or preferred");
+            this.cons.push("Not available at this time slot");
+        } else if (availability && availability.isPreferred) {
+            this.score += BASE_POINTS;
+            this.pros.push("The time slot of this class is preferred");
         }
     }
 }
