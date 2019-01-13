@@ -29,7 +29,7 @@ import FacultyLoadingFacultyMemberItem, {
     OngoingSubdocumentItem,
 } from "../interfaces/faculty_loading_faculty_member";
 import FacultyProfile from "../interfaces/faculty_profile";
-import SchedulerController from "./scheduler";
+import SchedulerController from "./scheduler.old";
 
 const formatClassSchedule = (cs: ClassSchedule) => ({
     id: cs.id,
@@ -38,6 +38,7 @@ const formatClassSchedule = (cs: ClassSchedule) => ({
     room: cs.room,
     section: cs.section,
     course: cs.course,
+    studentYear: cs.studentYear,
 
     subjectName: cs.subject.name,
     subjectCode: cs.subject.code,
@@ -150,6 +151,9 @@ export default class TermController implements Controller {
 
     async get(id: number) {
         const term = await this.findTermById(id, {
+            where: {
+                status: Not(TermStatus.Archived)
+            },
             relations: [
                 "classSchedules",
                 "classSchedules.subject",
@@ -178,12 +182,10 @@ export default class TermController implements Controller {
 
     async facultyMemberStats() {
         const term = await Term.findOne({
-            where: {
-                status: TermStatus.Scheduling,
-            },
             relations: [
                 "externalLoads",
                 "classSchedules",
+                "classSchedules.feedback",
                 "classSchedules.feedback.facultyMember",
                 "classSchedules.subject",
                 "timeConstraints",
@@ -218,16 +220,14 @@ export default class TermController implements Controller {
         stats.activity.inactive = facultyMembers.length - stats.activity.active;
 
         facultyMembers.forEach(fm => {
-
             // Count load status
             const classes = term.classSchedules
                 .filter(cs => Boolean(cs.feedback))
                 .filter(cs => cs.feedback.facultyMember.id === fm.id);
-            
+
             const status = getStatusForLoadAmount(fm.type, classes.length);
             stats.load[status]++;
 
-        
             // Count rank
             stats.rank[fm.type]++;
         });
