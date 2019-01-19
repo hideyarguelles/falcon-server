@@ -1,5 +1,12 @@
 import * as _ from "lodash";
-import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Subject, Term, TimeConstraint } from "../entities";
+import {
+    ClassSchedule,
+    FacultyMember,
+    FacultyMemberClassFeedback,
+    Subject,
+    Term,
+    TimeConstraint,
+} from "../entities";
 import { FacultyMemberType, FeedbackStatus } from "../enums";
 import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
 import MeetingHours, { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
@@ -91,10 +98,10 @@ class FacultyClassScheduleScore {
     }
 
     async calculateSubdocumentScore() {
-        function associatedCount(subdocuments: FacultySubdocumentEntity[]) {
+        const associatedCount = (subdocuments: FacultySubdocumentEntity[]) => {
             const program = this.classSchedule.subject.program;
             return subdocuments.filter(s => s.associatedPrograms.includes(program)).length;
-        }
+        };
 
         const {
             degrees,
