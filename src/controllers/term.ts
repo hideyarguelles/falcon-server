@@ -2,34 +2,31 @@ import { validate } from "class-validator";
 import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
 import {
     ClassSchedule,
+    Degree,
+    ExtensionWork,
+    ExternalLoad,
     FacultyMember,
     FacultyMemberClassFeedback,
+    InstructionalMaterial,
+    Presentation,
+    Recognition,
     Term,
     TimeConstraint,
     User,
-    Degree,
-    Presentation,
-    InstructionalMaterial,
-    ExtensionWork,
-    Recognition,
-    ExternalLoad,
 } from "../entities";
 import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Notice from "../entities/notice";
 import Subject from "../entities/subject";
-import { ActivityType, FeedbackStatus, TermStatus, FacultyMemberType } from "../enums";
+import { ActivityType, FacultyMemberType, FeedbackStatus, TermStatus } from "../enums";
 import LoadAmountStatus, { getStatusForLoadAmount } from "../enums/load_amount_status";
 import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
-import FacultyLoadingFacultyMemberItem, {
-    OngoingSubdocumentItem,
-} from "../interfaces/faculty_loading_faculty_member";
-import FacultyProfile from "../interfaces/faculty_profile";
-import SchedulerController from "./scheduler.old";
+import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
+import { candidatesForClassSchedule, makeSchedule, numberOfAssignments } from "./scheduler";
 
 const formatClassSchedule = (cs: ClassSchedule) => ({
     id: cs.id,
@@ -39,6 +36,7 @@ const formatClassSchedule = (cs: ClassSchedule) => ({
     section: cs.section,
     course: cs.course,
     studentYear: cs.studentYear,
+    forAdjunct: cs.forAdjunct,
 
     subjectName: cs.subject.name,
     subjectCode: cs.subject.code,
@@ -152,7 +150,7 @@ export default class TermController implements Controller {
     async get(id: number) {
         const term = await this.findTermById(id, {
             where: {
-                status: Not(TermStatus.Archived)
+                status: Not(TermStatus.Archived),
             },
             relations: [
                 "classSchedules",
@@ -240,9 +238,8 @@ export default class TermController implements Controller {
             const faculties = await FacultyMember.find({
                 activity: ActivityType.Active,
             });
-            const scheduleController = new SchedulerController();
             let unassignedFacultyCount: any = faculties.map(
-                async f => await scheduleController.numberOfAssignments(f, t),
+                async f => await numberOfAssignments(f, t),
             );
             unassignedFacultyCount = await Promise.all(unassignedFacultyCount);
             unassignedFacultyCount = unassignedFacultyCount.filter(c => c === 0).length;
@@ -354,7 +351,7 @@ export default class TermController implements Controller {
             ],
         });
 
-        await new SchedulerController().makeSchedule(currentTerm);
+        await makeSchedule(currentTerm);
         return await this.getClassSchedules(currentTerm.id);
     }
 
@@ -657,13 +654,11 @@ export default class TermController implements Controller {
         return formatClassSchedule(classSchedule);
     }
 
-    async getRecommendedFaculties(
-        classScheduleId: number,
-        termId: number,
-    ): Promise<FacultyProfile[]> {
+    async getRecommendedFaculties(classScheduleId: number, termId: number): Promise<any[]> {
         const classSchedule = await ClassSchedule.findOne(classScheduleId, {
             relations: ["subject"],
         });
+
         const term = await this.findTermById(termId, {
             relations: [
                 "externalLoads",
@@ -674,20 +669,14 @@ export default class TermController implements Controller {
             ],
         });
 
-        const candidates = await new SchedulerController().candidatesForClassSchedule(
-            classSchedule,
-            term,
-        );
+        const candidates = await candidatesForClassSchedule(classSchedule, term);
+
         return candidates.map(c => ({
-            id: c.faculty.id,
-            sex: c.faculty.sex,
-            type: c.faculty.type,
-            activity: c.faculty.activity,
-            birthDate: c.faculty.birthDate,
-            pnuId: c.faculty.pnuId,
-            firstName: c.faculty.user.firstName,
-            lastName: c.faculty.user.lastName,
-            email: c.faculty.user.email,
+            facultyMember: c.facultyMember,
+            pros: c.pros,
+            cons: c.cons,
+            errors: c.errors,
+            score: c.score,
         }));
     }
 }

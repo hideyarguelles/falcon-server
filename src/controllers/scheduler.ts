@@ -1,8 +1,9 @@
 import * as _ from "lodash";
-import { ClassSchedule, FacultyMember, TimeConstraint } from "../entities";
+import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Subject, Term, TimeConstraint } from "../entities";
 import { FacultyMemberType, FeedbackStatus } from "../enums";
+import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
+import MeetingHours, { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
 import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
-import MeetingHours, { twoMeetingHoursBefore } from "../enums/meeting_hours";
 
 const MAXIMUM_PREPS = 2;
 const UNASSIGNABLE = -1;
@@ -84,6 +85,8 @@ class FacultyClassScheduleScore {
             this.calculateRankScore(),
             this.calculatePreparations(),
             this.calculateScheduleCompatibility(),
+            this.calculateExperience(),
+            this.calculateAvailability(),
         ]);
     }
 
@@ -218,5 +221,139 @@ class FacultyClassScheduleScore {
             this.score += BASE_POINTS;
             this.pros.push("The time slot of this class is preferred");
         }
+    }
+}
+
+export async function candidatesForClassSchedule(
+    cs: ClassSchedule,
+    term: Term,
+): Promise<FacultyClassScheduleScore[]> {
+    let faculties = await FacultyMember.find({
+        relations: [
+            "degrees",
+            "recognitions",
+            "presentations",
+            "instructionalMaterials",
+            "extensionWorks",
+            "user",
+        ],
+    });
+
+    //
+    // ─── Ensure full time faculties get assigned first ────────────────────────────────────────────────────────────
+    //
+
+    const fullTimeFaculties = faculties.filter(f => f.type !== FacultyMemberType.PartTime);
+    let fullTimeFacultiesHaveMinimum = true;
+
+    for (const f of fullTimeFaculties) {
+        const loadCount = await numberOfAssignments(f, term);
+        const loadingLimit = FacultyMemberTypeLoadingLimit.get(f.type)!;
+
+        // Everyone must be at least minimum
+        if (loadCount < loadingLimit.minimum) {
+            fullTimeFacultiesHaveMinimum = false;
+            break;
+        }
+    }
+
+    if (!fullTimeFacultiesHaveMinimum) {
+        faculties = fullTimeFaculties;
+    }
+
+    //
+    // ─── Calculate scores ────────────────────────────────────────────────────────────
+    //
+    const candidates = await Promise.all(
+        faculties.map(async fs => {
+            const css = term.classSchedules;
+            const availabilties = term.timeConstraints.filter(tc => tc.facultyMember.id === fs.id);
+            const fcss = new FacultyClassScheduleScore(fs, cs, css, availabilties);
+            await fcss.calculateScore();
+            return fcss;
+        }),
+    );
+
+    // Scort highest to lowest
+    return candidates
+        .filter(c => c.score !== UNASSIGNABLE)
+        .sort((a, b) => {
+            if (a.score < b.score) {
+                return -1;
+            }
+
+            if (a.score > b.score) {
+                return 1;
+            }
+
+            return 0;
+        })
+        .reverse();
+}
+
+export async function numberOfTimesTaught(fm: FacultyMember, s: Subject) {
+    return await ClassSchedule.count({
+        where: {
+            subject: {
+                id: s.id,
+            },
+            feedback: {
+                facultyMember: {
+                    id: fm.id,
+                },
+                status: FeedbackStatus.Accepted,
+            },
+        },
+    });
+}
+
+export async function numberOfAssignments(fm: FacultyMember, t: Term) {
+    const cs = await ClassSchedule.find({
+        relations: ["feedback", "feedback.facultyMember"],
+        where: {
+            term: {
+                id: t.id,
+            },
+        },
+    });
+    return cs.filter(cs => cs.feedback && cs.feedback.facultyMember.id === fm.id).length;
+}
+
+export async function makeSchedule(term: Term) {
+    const css = await term.classSchedules
+        // sort by meeting hours
+        // third consecutive restriction check won't work without this sort
+        .sort((csa, csb) => compareMeetingHours(csa.meetingHours, csb.meetingHours))
+        // Only unassigned class schedule
+        .filter(cs => !Boolean(cs.feedback));
+
+    for (const cs of css) {
+        console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
+
+        const candidates = await candidatesForClassSchedule(cs, term);
+
+        console.log(`Found ${candidates.length} candidates`);
+
+        if (candidates.length === 0) {
+            console.log(`For ${cs.section} ${cs.subject.name}, no one is good enough`);
+            continue;
+        }
+
+        console.log("Candidates", candidates);
+
+        cs.feedback = FacultyMemberClassFeedback.create({
+            status: FeedbackStatus.Pending,
+            facultyMember: candidates[0].facultyMember,
+            classSchedule: cs,
+        });
+
+        console.log(
+            `Class schedule ${cs.section} ${cs.subject.name} is being assigned ${
+                candidates[0].facultyMember.id
+            } with a score of ${candidates[0].score}`,
+        );
+
+        await cs.feedback.save();
+        await cs.save();
     }
 }
