@@ -10,7 +10,7 @@ import { FeedbackStatus, ActivityType, TermStatus } from "../enums";
 import * as _ from "lodash";
 import FacultyProfile from "../interfaces/faculty_profile";
 
-function facultyMemberToProfile(fm) {
+export function facultyMemberToProfile(fm) {
     return {
         id: fm.id,
         sex: fm.sex,
