@@ -118,16 +118,8 @@ export default class TermView extends View<TermController> {
             termId,
         );
 
-        let allFaculties = await new FacultyMemberController().getAllActiveFaculties();
-        allFaculties = allFaculties.filter(
-            f => recommendations.findIndex(r => r.facultyMember.id === f.id) === -1,
-        );
-
         ctx.status = status.OK;
-        ctx.body = {
-            recommendations,
-            allFaculties,
-        };
+        ctx.body = recommendations;
     };
 
     setFaculty = async (ctx: Context) => {
