@@ -26,6 +26,7 @@ import ValidationFailError from "../errors/validation_fail_error";
 import Controller from "../interfaces/controller";
 import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class_schedule";
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
+import { facultyMemberToProfile } from "./faculty_member";
 import { candidatesForClassSchedule, makeSchedule, numberOfAssignments } from "./scheduler";
 
 const formatClassSchedule = (cs: ClassSchedule) => ({
@@ -672,7 +673,7 @@ export default class TermController implements Controller {
         const candidates = await candidatesForClassSchedule(classSchedule, term);
 
         return candidates.map(c => ({
-            facultyMember: c.facultyMember,
+            facultyMember: facultyMemberToProfile(c.facultyMember),
             pros: c.pros,
             cons: c.cons,
             errors: c.errors,
