@@ -13,7 +13,6 @@ import MeetingHours, { compareMeetingHours, twoMeetingHoursBefore } from "../enu
 import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
 
 const MAXIMUM_PREPS = 2;
-const UNASSIGNABLE = -1;
 const BASE_POINTS = 100;
 
 const PRESETS = {
@@ -283,7 +282,6 @@ export async function candidatesForClassSchedule(
 
     // Scort highest to lowest
     return candidates
-        .filter(c => c.score !== UNASSIGNABLE)
         .sort((a, b) => {
             if (a.score < b.score) {
                 return -1;
@@ -337,7 +335,10 @@ export async function makeSchedule(term: Term) {
     for (const cs of css) {
         console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
 
-        const candidates = await candidatesForClassSchedule(cs, term);
+        let candidates = await candidatesForClassSchedule(cs, term);
+
+        // We can only assign candidates without errors in compatibility or cons
+        candidates = candidates.filter(c => c.errors.length === 0 && c.cons.length === 0);
 
         console.log(`Found ${candidates.length} candidates`);
 
