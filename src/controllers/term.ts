@@ -18,7 +18,7 @@ import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Notice from "../entities/notice";
 import Subject from "../entities/subject";
-import { ActivityType, FacultyMemberType, FeedbackStatus, TermStatus } from "../enums";
+import { ActivityType, FacultyMemberType, FeedbackStatus, TermStatus, UserType } from "../enums";
 import LoadAmountStatus, { getStatusForLoadAmount } from "../enums/load_amount_status";
 import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
@@ -641,10 +641,16 @@ export default class TermController implements Controller {
                 await FacultyMemberClassFeedback.remove(cs.feedback);
             });
 
+        // Associate Dean classes are always accepted by default
+        const status =
+            facultyMember.user.authorization === UserType.AssociateDean
+                ? FeedbackStatus.Accepted
+                : FeedbackStatus.Pending;
+
         const fmcf = FacultyMemberClassFeedback.create({
             facultyMember,
             classSchedule,
-            status: FeedbackStatus.Pending,
+            status,
         });
 
         classSchedule.feedback = fmcf;
