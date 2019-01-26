@@ -22,7 +22,7 @@ export default class TimeConstraint extends BaseEntity {
     @IsEnum(AvailabilityType)
     availabilityType: AvailabilityType;
 
-    @Column()
+    @Column({ nullable: true })
     otherReason: string;
 
     //
