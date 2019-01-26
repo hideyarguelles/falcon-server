@@ -510,6 +510,8 @@ export default class TermController implements Controller {
                 meetingDays: tc.meetingDays,
                 term,
                 facultyMember,
+                availabilityType: tc.availabilityType,
+                otherReason: tc.otherReason
             }),
         );
 
