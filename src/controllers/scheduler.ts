@@ -11,6 +11,7 @@ import { FacultyMemberType, FeedbackStatus } from "../enums";
 import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
 import MeetingHours, { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
 import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
+import AvailabilityType from "../enums/availability_type";
 
 const MAXIMUM_PREPS = 2;
 const BASE_POINTS = 100;
@@ -218,15 +219,23 @@ class FacultyClassScheduleScore {
         );
 
         // Faculty members that did not submit any availability information is automatically available every time
-        const isAvailable = this.availabilities.length === 0 || availability !== undefined;
+        const isAvailable =
+            availability &&
+            [AvailabilityType.Available, AvailabilityType.Preferred].includes(
+                availability.availabilityType,
+            );
 
-        if (!isAvailable) {
-            // console.log("Unassignable because is not available or preferred");
+        if (isAvailable) {
+            if (availability.availabilityType === AvailabilityType.Preferred) {
+                this.score += BASE_POINTS;
+                this.pros.push("The time slot of this class is preferred");
+            } else {
+                this.pros.push("Available at this time slot");
+            }
+        } else {
             this.cons.push("Not available at this time slot");
-        } else if (availability && availability.isPreferred) {
-            this.score += BASE_POINTS;
-            this.pros.push("The time slot of this class is preferred");
         }
+
     }
 }
 

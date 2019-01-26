@@ -4,7 +4,6 @@ import {
     ClassSchedule,
     Degree,
     ExtensionWork,
-    ExternalLoad,
     FacultyMember,
     FacultyMemberClassFeedback,
     InstructionalMaterial,
@@ -69,7 +68,6 @@ const formatFacultyLoadingFacultyMemberItem = (
     fm: FacultyMember,
     classSchedules: ClassSchedule[],
     timeConstraints: TimeConstraint[],
-    hasExternalLoad: boolean,
 ): FacultyLoadingFacultyMemberItem => {
     const loadAmountStatus = getStatusForLoadAmount(fm.type, classSchedules.length);
     const ongoingSubdocuments = [
@@ -117,7 +115,6 @@ const formatFacultyLoadingFacultyMemberItem = (
         timeConstraints,
         loadAmountStatus,
         ongoingSubdocuments,
-        hasExternalLoad,
     };
 };
 
@@ -182,7 +179,6 @@ export default class TermController implements Controller {
     async facultyMemberStats() {
         const term = await Term.findOne({
             relations: [
-                "externalLoads",
                 "classSchedules",
                 "classSchedules.feedback",
                 "classSchedules.feedback.facultyMember",
@@ -344,7 +340,6 @@ export default class TermController implements Controller {
                 status: TermStatus.Scheduling,
             },
             relations: [
-                "externalLoads",
                 "classSchedules",
                 "classSchedules.subject",
                 "timeConstraints",
@@ -426,20 +421,10 @@ export default class TermController implements Controller {
                     tc => tc.facultyMember.id === fm.id,
                 );
 
-                const [_, externalLoadCount] = await ExternalLoad.findAndCount({
-                    term: {
-                        id: term.id,
-                    },
-                    facultyMember: {
-                        id: fm.id,
-                    },
-                });
-
                 return formatFacultyLoadingFacultyMemberItem(
                     fm,
                     classSchedules,
                     timeConstraints,
-                    externalLoadCount !== 0,
                 );
             }),
         );
@@ -480,20 +465,10 @@ export default class TermController implements Controller {
 
         const timeConstraints = term.timeConstraints.filter(tc => tc.facultyMember.id === fm.id);
 
-        const [_, externalLoadCount] = await ExternalLoad.findAndCount({
-            term: {
-                id: term.id,
-            },
-            facultyMember: {
-                id: fm.id,
-            },
-        });
-
         return formatFacultyLoadingFacultyMemberItem(
             fm,
             classSchedules,
             timeConstraints,
-            externalLoadCount !== 0,
         );
     }
 
@@ -534,27 +509,10 @@ export default class TermController implements Controller {
             TimeConstraint.create({
                 meetingHours: tc.meetingHours,
                 meetingDays: tc.meetingDays,
-                isPreferred: tc.isPreferred,
                 term,
                 facultyMember,
             }),
         );
-
-        const existing = await ExternalLoad.findOne({
-            facultyMember,
-            term,
-        });
-
-        if (form.hasExternalLoad) {
-            if (!existing) {
-                await ExternalLoad.create({
-                    facultyMember,
-                    term,
-                }).save();
-            }
-        } else if (existing) {
-            await ExternalLoad.delete(existing);
-        }
 
         await Promise.all(tcs.map(async tc => await tc.save()));
         return tcs;
@@ -668,7 +626,6 @@ export default class TermController implements Controller {
 
         const term = await this.findTermById(termId, {
             relations: [
-                "externalLoads",
                 "classSchedules",
                 "classSchedules.subject",
                 "timeConstraints",

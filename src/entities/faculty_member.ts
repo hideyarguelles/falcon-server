@@ -19,7 +19,6 @@ import {
     User,
 } from "./";
 import FacultyMemberClassFeedback from "./feedback";
-import ExternalLoad from "./external_load";
 import Notice from "./notice";
 
 @Entity()
@@ -67,9 +66,6 @@ export default class FacultyMember extends BaseEntity {
 
     @OneToMany((type?: any) => TimeConstraint, (tc: TimeConstraint) => tc.facultyMember)
     timeConstraints: TimeConstraint[];
-    
-    @OneToMany((type?: any) => TimeConstraint, (el: ExternalLoad) => el.facultyMember)
-    externalLoads: ExternalLoad[];
 
     //
     // ─── Subdocuments ───────────────────────────────────────────────────────────────────────────

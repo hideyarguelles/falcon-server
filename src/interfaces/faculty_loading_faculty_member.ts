@@ -19,6 +19,5 @@ export default interface FacultyLoadingFacultyMemberItem {
     classSchedules: ClassSchedule[];
     timeConstraints: TimeConstraint[];
     
-    hasExternalLoad: boolean;
     ongoingSubdocuments: OngoingSubdocumentItem[];
 }
