@@ -36,7 +36,6 @@ const formatClassSchedule = (cs: ClassSchedule) => ({
     section: cs.section,
     course: cs.course,
     studentYear: cs.studentYear,
-    forAdjunct: cs.forAdjunct,
 
     subjectName: cs.subject.name,
     subjectCode: cs.subject.code,
