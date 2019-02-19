@@ -255,28 +255,6 @@ export async function candidatesForClassSchedule(
     });
 
     //
-    // ─── Ensure full time faculties get assigned first ────────────────────────────────────────────────────────────
-    //
-
-    const fullTimeFaculties = faculties.filter(f => f.type !== FacultyMemberType.PartTime);
-    let fullTimeFacultiesHaveMinimum = true;
-
-    for (const f of fullTimeFaculties) {
-        const loadCount = await numberOfAssignments(f, term);
-        const loadingLimit = FacultyMemberTypeLoadingLimit.get(f.type)!;
-
-        // Everyone must be at least minimum
-        if (loadCount < loadingLimit.minimum) {
-            fullTimeFacultiesHaveMinimum = false;
-            break;
-        }
-    }
-
-    if (!fullTimeFacultiesHaveMinimum) {
-        faculties = fullTimeFaculties;
-    }
-
-    //
     // ─── Calculate scores ────────────────────────────────────────────────────────────
     //
     const candidates = await Promise.all(
@@ -345,6 +323,29 @@ export async function makeSchedule(term: Term) {
         console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
 
         let candidates = await candidatesForClassSchedule(cs, term);
+        
+
+        //
+        // ─── Ensure full time faculties get assigned first ────────────────────────────────────────────────────────────
+        //
+
+        const fullTimeFaculties = candidates.filter(c => c.facultyMember.type !== FacultyMemberType.PartTime);
+        let fullTimeFacultiesHaveMinimum = true;
+
+        for (const c of fullTimeFaculties) {
+            const loadCount = await numberOfAssignments(c.facultyMember, term);
+            const loadingLimit = FacultyMemberTypeLoadingLimit.get(c.facultyMember.type)!;
+
+            // Everyone must be at least minimum
+            if (loadCount < loadingLimit.minimum) {
+                fullTimeFacultiesHaveMinimum = false;
+                break;
+            }
+        }
+
+        if (!fullTimeFacultiesHaveMinimum) {
+            candidates = fullTimeFaculties;
+        }
 
         // We can only assign candidates without errors in compatibility or cons
         candidates = candidates.filter(c => c.errors.length === 0 && c.cons.length === 0);
