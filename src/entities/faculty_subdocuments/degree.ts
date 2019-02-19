@@ -12,9 +12,8 @@ export default class Degree extends FacultySubdocumentEntity {
     @IsEnum(DegreeLevel)
     level: DegreeLevel;
 
-    @Column()
-    @IsNotEmpty()
-    completionYear: string;
+    @Column({ nullable: true })
+    completionYear?: string;
 
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
