@@ -18,7 +18,14 @@ import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
 import Notice from "../entities/notice";
 import Subject from "../entities/subject";
-import { ActivityType, FacultyMemberType, FeedbackStatus, TermStatus, UserType } from "../enums";
+import {
+    ActivityType,
+    FacultyMemberType,
+    FeedbackStatus,
+    TermStatus,
+    UserType,
+    OrdinalTerm,
+} from "../enums";
 import LoadAmountStatus, { getStatusForLoadAmount } from "../enums/load_amount_status";
 import { nextStatus, previousStatus } from "../enums/term_status";
 import EntityNotFoundError from "../errors/not_found";
@@ -614,16 +621,45 @@ export default class TermController implements Controller {
     }
 
     async getUnderloadedFacultiesLastTerm(): Promise<any[]> {
+        const relations = [
+            "classSchedules",
+            "classSchedules.feedback",
+            "classSchedules.feedback.facultyMember",
+        ];
+
         const currentTerm = await Term.findOne({
             where: {
                 status: Not(TermStatus.Archived),
             },
-            relations: [
-                "classSchedules",
-                "classSchedules.feedback",
-                "classSchedules.feedback.facultyMember",
-            ],
+            relations,
         });
+
+        let lastTerm = undefined;
+
+        if (currentTerm.term === OrdinalTerm.First) {
+            lastTerm = await Term.findOne({
+                where: {
+                    term: OrdinalTerm.Third,
+                    startYear: currentTerm.startYear - 1,
+                },
+                relations,
+            });
+        } else {
+            lastTerm = await Term.findOne({
+                where: {
+                    term:
+                        currentTerm.term === OrdinalTerm.Third
+                            ? OrdinalTerm.Second
+                            : OrdinalTerm.First,
+                    startYear: currentTerm.startYear,
+                },
+                relations,
+            });
+        }
+
+        if (!lastTerm) {
+            return [];
+        }
 
         const classSchedules = currentTerm.classSchedules.filter(cs => Boolean(cs.feedback));
         let facultyMembers = classSchedules.map(cs => cs.feedback.facultyMember);
@@ -631,7 +667,7 @@ export default class TermController implements Controller {
 
         return facultyMembers
             .filter(fm => {
-                const facultyCs = classSchedules.filter(
+                const facultyCs = lastTerm.classSchedules.filter(
                     cs => cs.feedback.facultyMember.id === fm.id,
                 );
                 const status = getStatusForLoadAmount(fm.type, facultyCs.length);
