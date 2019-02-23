@@ -178,7 +178,7 @@ class FacultyClassScheduleScore {
             classHoursOfTheDays.includes(tmhb[0]) &&
             classHoursOfTheDays.includes(tmhb[1]);
 
-        if (!isThirdConsecutive) {
+        if (isThirdConsecutive) {
             this.errors.push("This class is the third consecutive");
         }
 
@@ -212,6 +212,11 @@ class FacultyClassScheduleScore {
     }
 
     async calculateAvailability() {
+        if (this.availabilities.length === 0) {
+            this.cons.push("Faculty member did not submit time availability");
+            return;
+        }
+
         const availability = this.availabilities.find(
             tc =>
                 this.classSchedule.meetingDays === tc.meetingDays &&
@@ -243,7 +248,7 @@ export async function candidatesForClassSchedule(
     cs: ClassSchedule,
     term: Term,
 ): Promise<FacultyClassScheduleScore[]> {
-    let faculties = await FacultyMember.find({
+    const faculties = await FacultyMember.find({
         relations: [
             "degrees",
             "recognitions",
