@@ -675,6 +675,22 @@ export default class TermController implements Controller {
             .map(fm => fm.id);
     }
 
+    async getTermsFromYear(year: number): Promise<Term[]> {
+        const terms = await Term.find({
+            where: {
+                startYear: year,
+            },
+            relations: [
+                "classSchedule",
+                "classSchedules.subject",
+                "classSchedules.feedback",
+                "classSchedules.feedback.facultyMember",
+            ],
+        });
+
+        return terms;
+    }
+
     async getRecommendedFaculties(classScheduleId: number, termId: number): Promise<any[]> {
         const classSchedule = await ClassSchedule.findOne(classScheduleId, {
             relations: ["subject"],
