@@ -635,12 +635,13 @@ export default class TermController implements Controller {
         });
 
         let lastTerm = undefined;
+        const currentTermYear = Number(currentTerm.startYear);
 
         if (currentTerm.term === OrdinalTerm.First) {
             lastTerm = await Term.findOne({
                 where: {
                     term: OrdinalTerm.Third,
-                    startYear: currentTerm.startYear - 1,
+                    startYear: currentTermYear - 1,
                 },
                 relations,
             });
@@ -651,7 +652,7 @@ export default class TermController implements Controller {
                         currentTerm.term === OrdinalTerm.Third
                             ? OrdinalTerm.Second
                             : OrdinalTerm.First,
-                    startYear: currentTerm.startYear,
+                    startYear: currentTermYear,
                 },
                 relations,
             });
