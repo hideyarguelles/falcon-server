@@ -347,6 +347,8 @@ export default class TermController implements Controller {
             relations: [
                 "classSchedules",
                 "classSchedules.subject",
+                "classSchedules.feedback",
+                "classSchedules.feedback.facultyMember",
                 "timeConstraints",
                 "timeConstraints.facultyMember",
             ],
@@ -700,6 +702,8 @@ export default class TermController implements Controller {
             relations: [
                 "classSchedules",
                 "classSchedules.subject",
+                "classSchedules.feedback",
+                "classSchedules.feedback.facultyMember",
                 "timeConstraints",
                 "timeConstraints.facultyMember",
             ],
