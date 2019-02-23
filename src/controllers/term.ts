@@ -681,7 +681,7 @@ export default class TermController implements Controller {
                 startYear: year,
             },
             relations: [
-                "classSchedule",
+                "classSchedules",
                 "classSchedules.subject",
                 "classSchedules.feedback",
                 "classSchedules.feedback.facultyMember",
