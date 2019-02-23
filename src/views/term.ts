@@ -155,4 +155,11 @@ export default class TermView extends View<TermController> {
             ctx.status = status.NO_CONTENT;
         });
     }
+
+    getUnderloadedFacultiesLastTerm = async (ctx: Context) => {
+        await this.controller.getUnderloadedFacultiesLastTerm().then(fms => {
+            ctx.status = status.OK;
+            ctx.body = fms;
+        });
+    }
 }
