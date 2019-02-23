@@ -154,9 +154,6 @@ export default class TermController implements Controller {
 
     async get(id: number) {
         const term = await this.findTermById(id, {
-            where: {
-                status: Not(TermStatus.Archived),
-            },
             relations: [
                 "classSchedules",
                 "classSchedules.subject",
@@ -167,6 +164,7 @@ export default class TermController implements Controller {
                 "timeConstraints.facultyMember",
             ],
         });
+
         const notices = await Notice.find({
             relations: ["facultyMember", "facultyMember.user"],
             where: {
