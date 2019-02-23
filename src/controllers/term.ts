@@ -662,7 +662,7 @@ export default class TermController implements Controller {
             return [];
         }
 
-        const classSchedules = currentTerm.classSchedules.filter(cs => Boolean(cs.feedback));
+        const classSchedules = lastTerm.classSchedules.filter(cs => Boolean(cs.feedback));
         let facultyMembers = classSchedules.map(cs => cs.feedback.facultyMember);
         facultyMembers = _.uniqBy(facultyMembers, "id");
 
