@@ -33,7 +33,7 @@ export default class TermView extends View<TermController> {
             ctx.status = status.OK;
             ctx.body = s;
         });
-    }
+    };
 
     addClassSchedule = async (ctx: Context): Promise<void> => {
         const { termId } = ctx.params;
@@ -148,18 +148,25 @@ export default class TermView extends View<TermController> {
         });
     };
 
-
     removeNotice = async (ctx: Context) => {
         const { noticeId, termId } = ctx.params;
         await this.controller.removeNotice(termId, noticeId).then(() => {
             ctx.status = status.NO_CONTENT;
         });
-    }
+    };
 
     getUnderloadedFacultiesLastTerm = async (ctx: Context) => {
         await this.controller.getUnderloadedFacultiesLastTerm().then(fms => {
             ctx.status = status.OK;
             ctx.body = fms;
         });
-    }
+    };
+
+    getTermsFromYear = async (ctx: Context) => {
+        const { year } = ctx.params;
+        await this.controller.getTermsFromYear(year).then(ts => {
+            ctx.status = status.OK;
+            ctx.body = ts;
+        });
+    };
 }
