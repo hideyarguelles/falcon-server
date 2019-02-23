@@ -1,4 +1,5 @@
 import { validate } from "class-validator";
+import * as _ from "lodash";
 import { EntityManager, FindOneOptions, getManager, Not } from "typeorm";
 import {
     ClassSchedule,
@@ -420,11 +421,7 @@ export default class TermController implements Controller {
                     tc => tc.facultyMember.id === fm.id,
                 );
 
-                return formatFacultyLoadingFacultyMemberItem(
-                    fm,
-                    classSchedules,
-                    timeConstraints,
-                );
+                return formatFacultyLoadingFacultyMemberItem(fm, classSchedules, timeConstraints);
             }),
         );
     }
@@ -464,11 +461,7 @@ export default class TermController implements Controller {
 
         const timeConstraints = term.timeConstraints.filter(tc => tc.facultyMember.id === fm.id);
 
-        return formatFacultyLoadingFacultyMemberItem(
-            fm,
-            classSchedules,
-            timeConstraints,
-        );
+        return formatFacultyLoadingFacultyMemberItem(fm, classSchedules, timeConstraints);
     }
 
     async getClassSchedules(termId: number): Promise<FacultyLoadingClassScheduleItem[]> {
@@ -511,7 +504,7 @@ export default class TermController implements Controller {
                 term,
                 facultyMember,
                 availabilityType: tc.availabilityType,
-                otherReason: tc.otherReason
+                otherReason: tc.otherReason,
             }),
         );
 
@@ -618,6 +611,33 @@ export default class TermController implements Controller {
         await classSchedule.save();
 
         return formatClassSchedule(classSchedule);
+    }
+
+    async getUnderloadedFacultiesLastTerm(): Promise<any[]> {
+        const currentTerm = await Term.findOne({
+            where: {
+                status: Not(TermStatus.Archived),
+            },
+            relations: [
+                "classSchedules",
+                "classSchedules.feedback",
+                "classSchedules.feedback.facultyMember",
+            ],
+        });
+
+        const classSchedules = currentTerm.classSchedules.filter(cs => Boolean(cs.feedback));
+        let facultyMembers = classSchedules.map(cs => cs.feedback.facultyMember);
+        facultyMembers = _.uniqBy(facultyMembers, "id");
+
+        return facultyMembers
+            .filter(fm => {
+                const facultyCs = classSchedules.filter(
+                    cs => cs.feedback.facultyMember.id === fm.id,
+                );
+                const status = getStatusForLoadAmount(fm.type, facultyCs.length);
+                return status === LoadAmountStatus.Underloaded;
+            })
+            .map(fm => fm.id);
     }
 
     async getRecommendedFaculties(classScheduleId: number, termId: number): Promise<any[]> {
