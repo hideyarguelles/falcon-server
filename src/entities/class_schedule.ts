@@ -37,6 +37,12 @@ export default class ClassSchedule extends BaseEntity {
     @Column()
     studentYear: string;
 
+    @Column()
+    forAdjunct: boolean;
+
+    @Column({ nullable: true })
+    adjunctName?: string;
+
     //
     // ─── Relations ───────────────────────────────────────────────────────────────────────────
     //
