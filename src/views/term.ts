@@ -130,6 +130,15 @@ export default class TermView extends View<TermController> {
         });
     };
 
+    setAdjunct = async (ctx: Context) => {
+        const { classScheduleId, termId } = ctx.params;
+        const { facultyName } = ctx.request.body;
+        await this.controller.setAdjunct(termId, classScheduleId, facultyName).then(cs => {
+            ctx.status = status.OK;
+            ctx.body = cs;
+        });
+    }
+
     getNotices = async (ctx: Context) => {
         const { termId } = ctx.params;
         await this.controller.getNotices(termId).then(n => {
