@@ -6,6 +6,7 @@ export interface ChildClassScheduleForm {
     room: string;
     course: string;
     section: string;
+    forAdjunct: boolean;
 }
 
 export interface ParentClassSchedulesForm {
