@@ -1,17 +1,11 @@
 import * as _ from "lodash";
-import {
-    ClassSchedule,
-    FacultyMember,
-    FacultyMemberClassFeedback,
-    Subject,
-    Term,
-    TimeConstraint,
-} from "../entities";
+import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Subject, Term, TimeConstraint } from "../entities";
 import { FacultyMemberType, FeedbackStatus } from "../enums";
+import AvailabilityType from "../enums/availability_type";
 import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
+import LoadAmountStatus, { getStatusForLoadAmount } from "../enums/load_amount_status";
 import MeetingHours, { compareMeetingHours, twoMeetingHoursBefore } from "../enums/meeting_hours";
 import FacultySubdocumentEntity from "../interfaces/faculty_subdocument";
-import AvailabilityType from "../enums/availability_type";
 
 const MAXIMUM_PREPS = 2;
 const BASE_POINTS = 100;
@@ -94,6 +88,7 @@ class FacultyClassScheduleScore {
             this.calculateScheduleCompatibility(),
             this.calculateExperience(),
             this.calculateAvailability(),
+            this.calculateLoadStatus(),
         ]);
     }
 
@@ -159,6 +154,7 @@ class FacultyClassScheduleScore {
         }
 
         if (assignedToSameSubject) {
+            this.score += BASE_POINTS;
             this.pros.push("Already assigned to a class with this subject");
         }
     }
@@ -240,7 +236,17 @@ class FacultyClassScheduleScore {
         } else {
             this.cons.push("Not available at this time slot");
         }
+    }
 
+    async calculateLoadStatus() {
+        const loadAmountStatus = getStatusForLoadAmount(
+            this.facultyMember.type,
+            this.classSchedules.length,
+        );
+        if (loadAmountStatus === LoadAmountStatus.Underloaded) {
+            this.pros.push("Is underloaded");
+            this.score += 100;
+        }
     }
 }
 
@@ -328,13 +334,14 @@ export async function makeSchedule(term: Term) {
         console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
 
         let candidates = await candidatesForClassSchedule(cs, term);
-        
 
         //
         // ─── Ensure full time faculties get assigned first ────────────────────────────────────────────────────────────
         //
 
-        const fullTimeFaculties = candidates.filter(c => c.facultyMember.type !== FacultyMemberType.PartTime);
+        const fullTimeFaculties = candidates.filter(
+            c => c.facultyMember.type !== FacultyMemberType.PartTime,
+        );
         let fullTimeFacultiesHaveMinimum = true;
 
         for (const c of fullTimeFaculties) {
