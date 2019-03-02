@@ -260,6 +260,7 @@ export default class TermController implements Controller {
                     term: {
                         id: t.id,
                     },
+                    forAdjunct: false,
                 },
             });
 
