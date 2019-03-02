@@ -626,13 +626,13 @@ export default class TermController implements Controller {
     async setAdjunct(
         termId: number,
         classScheduleId: number,
-        facultyName: string,
+        adjunctName: string,
     ): Promise<FacultyLoadingClassScheduleItem> {
         const classSchedule = await ClassSchedule.findOne(classScheduleId, {
             relations: ["subject", "term"],
         });
     
-        classSchedule.adjunctName = facultyName;
+        classSchedule.adjunctName = adjunctName;
         await classSchedule.save();
         return formatClassSchedule(classSchedule);
     }
