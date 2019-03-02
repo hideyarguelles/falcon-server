@@ -159,6 +159,7 @@ class FacultyClassScheduleScore {
         }
 
         if (assignedToSameSubject) {
+            this.score += BASE_POINTS;
             this.pros.push("Already assigned to a class with this subject");
         }
     }
