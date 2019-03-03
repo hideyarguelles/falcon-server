@@ -623,6 +623,20 @@ export default class TermController implements Controller {
         return formatClassSchedule(classSchedule);
     }
 
+    async setAdjunct(
+        termId: number,
+        classScheduleId: number,
+        adjunctName: string,
+    ): Promise<FacultyLoadingClassScheduleItem> {
+        const classSchedule = await ClassSchedule.findOne(classScheduleId, {
+            relations: ["subject", "term"],
+        });
+    
+        classSchedule.adjunctName = adjunctName;
+        await classSchedule.save();
+        return formatClassSchedule(classSchedule);
+    }
+
     async getUnderloadedFacultiesLastTerm(): Promise<any[]> {
         const relations = [
             "classSchedules",
@@ -696,7 +710,7 @@ export default class TermController implements Controller {
 
         return terms.map(t => ({
             ...t,
-            classSchedules: t.classSchedules.map(formatClassSchedule)
+            classSchedules: t.classSchedules.map(formatClassSchedule),
         }));
     }
 
