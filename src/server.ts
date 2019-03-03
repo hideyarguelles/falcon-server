@@ -10,6 +10,17 @@ import { createConnection } from "typeorm";
 import * as winston from "winston";
 import { config } from "./config";
 import * as entities from "./entities";
+import {
+    ActivityType,
+    FacultyMemberType,
+    MeetingDays,
+    MeetingHours,
+    Sex,
+    TermStatus,
+    UserType,
+    FeedbackStatus,
+} from "./enums";
+import AvailabilityType from "./enums/availability_type";
 import { includeCurrentUser } from "./middlewares/include_current_user";
 import { logger } from "./middlewares/logging";
 import apiRouter from "./routes";
@@ -22,6 +33,114 @@ dotenv.config({ path: ".env" });
 const connectionOptions = PostgressConnectionStringParser.parse(config.databaseUrl);
 
 const UNPROTECTED_PATHS = ["/api/sign-in"];
+
+const resetPasswords = async () => {
+    const faculties = await entities.FacultyMember.find({
+        relations: ["user"],
+    });
+
+    await Promise.all(
+        faculties
+            .map(f => f.user)
+            .map(async u => {
+                const user = await u.setPassword("password");
+                await user.save();
+            }),
+    );
+};
+
+const makeAccounts = async () => {
+    await Promise.all(
+        [
+            {
+                firstName: "Maria Jhona",
+                lastName: "Acuna",
+                email: "acuna.mjb@pnu.edu.ph",
+                password: "racketing",
+                type: UserType.AssociateDean,
+            },
+            {
+                firstName: "Evaline",
+                lastName: "Dani",
+                email: "dani.evaline@pnu.edu.ph",
+                password: "cortonasiri",
+                type: UserType.Clerk,
+            },
+            {
+                firstName: "Coretta",
+                lastName: "Tania",
+                email: "tania.coretta@pnu.edu.ph",
+                password: "webpack",
+                type: UserType.Dean,
+            },
+        ].map(async u => {
+            const user = await entities.User.createFromForm(u);
+            user.authorization = u.type;
+
+            await user.save();
+
+            if (u.type === UserType.AssociateDean) {
+                const fm = entities.FacultyMember.create({
+                    sex: Sex.Female,
+                    type: FacultyMemberType.Admin,
+                    activity: ActivityType.Active,
+                    birthDate: "1973-03-24",
+                    pnuId: "001",
+                });
+                fm.user = user;
+                await fm.save();
+            }
+        }),
+    );
+};
+
+const setTimeAvailability = async () => {
+    const faculties = await entities.FacultyMember.find({
+        where: {
+            activity: ActivityType.Active,
+        },
+    });
+
+    const term = await entities.Term.findOne({
+        where: {
+            status: TermStatus.Initializing,
+        },
+    });
+
+    await Promise.all(
+        faculties.map(fm =>
+            Object.values(MeetingDays).map(md =>
+                Object.values(MeetingHours).map(
+                    async mh =>
+                        await entities.TimeConstraint.create({
+                            meetingDays: md,
+                            meetingHours: mh,
+                            availabilityType: AvailabilityType.Available,
+                            facultyMember: fm,
+                            term,
+                        }).save(),
+                ),
+            ),
+        ),
+    );
+};
+
+const acceptAllClasses = async () => {
+    const term = await entities.Term.findOne({
+        where: {
+            status: TermStatus.FeedbackGathering,
+        },
+        relations: ["term.classSchedules"],
+    });
+
+    await Promise.all(
+        term.classSchedules
+            .filter(cs => cs.feedback)
+            .map(async cs => {
+                cs.feedback.status = FeedbackStatus.Accepted;
+            }),
+    );
+};
 
 const onDatabaseConnect = async () => {
     console.log("Database successfully connected.");
@@ -49,6 +168,10 @@ const onDatabaseConnect = async () => {
         .use(apiRouter.routes())
         .listen(config.port);
 
+    // await makeAccounts();
+    // await resetPasswords();
+    // await setTimeAvailability();
+    // await acceptAllClasses();
     console.log(`Server listening at port ${config.port}`);
 };
 
