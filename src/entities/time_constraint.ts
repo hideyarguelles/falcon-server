@@ -17,7 +17,6 @@ export default class TimeConstraint extends BaseEntity {
     @IsEnum(MeetingHours)
     meetingHours: MeetingHours;
 
-
     @Column("enum", { enum : AvailabilityType })
     @IsEnum(AvailabilityType)
     availabilityType: AvailabilityType;
