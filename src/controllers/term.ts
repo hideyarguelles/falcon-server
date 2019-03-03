@@ -685,7 +685,7 @@ export default class TermController implements Controller {
 
         return facultyMembers
             .filter(fm => {
-                const facultyCs = lastTerm.classSchedules.filter(
+                const facultyCs = classSchedules.filter(
                     cs => cs.feedback.facultyMember.id === fm.id,
                 );
                 const status = getStatusForLoadAmount(fm.type, facultyCs.length);
