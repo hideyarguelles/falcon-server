@@ -130,7 +130,7 @@ const acceptAllClasses = async () => {
         where: {
             status: TermStatus.FeedbackGathering,
         },
-        relations: ["term.classSchedules"],
+        relations: ["classSchedules", "classSchedules.feedback"],
     });
 
     await Promise.all(
@@ -138,6 +138,8 @@ const acceptAllClasses = async () => {
             .filter(cs => cs.feedback)
             .map(async cs => {
                 cs.feedback.status = FeedbackStatus.Accepted;
+                await cs.save();
+                await cs.feedback.save();
             }),
     );
 };
@@ -171,7 +173,7 @@ const onDatabaseConnect = async () => {
     // await makeAccounts();
     // await resetPasswords();
     // await setTimeAvailability();
-    // await acceptAllClasses();
+    await acceptAllClasses();
     console.log(`Server listening at port ${config.port}`);
 };
 
