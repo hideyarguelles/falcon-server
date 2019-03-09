@@ -328,7 +328,8 @@ export async function makeSchedule(term: Term) {
         // third consecutive restriction check won't work without this sort
         .sort((csa, csb) => compareMeetingHours(csa.meetingHours, csb.meetingHours))
         // Only unassigned class schedule
-        .filter(cs => !Boolean(cs.feedback));
+        .filter(cs => !Boolean(cs.feedback))
+        .filter(cs => !cs.forAdjunct);
 
     for (const cs of css) {
         console.log(`\nSearching for candidates for ${cs.section} ${cs.subject.name}`);
