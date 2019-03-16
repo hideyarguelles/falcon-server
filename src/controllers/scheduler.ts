@@ -64,6 +64,7 @@ class FacultyClassScheduleScore {
     public cons: string[] = [];
     public errors: string[] = [];
     public score: number = 0;
+    public sortScore: number = 0;
 
     get isAssignable() {
         return this.errors.length === 0;
@@ -158,11 +159,13 @@ class FacultyClassScheduleScore {
 
         if (!prepsCanTake) {
             this.cons.push(`Already has ${subjectsForFaculty.length} preparations`);
+            this.sortScore += 200;
         }
 
         if (assignedToSameSubject) {
             this.score += BASE_POINTS;
             this.pros.push("Already assigned to a class with this subject");
+            this.sortScore += 300;
         }
     }
 
@@ -209,6 +212,7 @@ class FacultyClassScheduleScore {
 
         if (timesTaught > 0) {
             this.pros.push(`Has taught this subject ${timesTaught} times before`);
+            this.sortScore += 400;
         }
 
         this.score += scoreWithDiminishingReturns(timesTaught, PRESETS.TIMES_TAUGHT);
@@ -233,11 +237,14 @@ class FacultyClassScheduleScore {
             if (availability.availabilityType === AvailabilityType.Preferred) {
                 this.score += BASE_POINTS;
                 this.pros.push("The time slot of this class is preferred");
+                this.sortScore += 500;
             } else {
                 this.pros.push("Available at this time slot");
+                this.sortScore += 400;
             }
         } else {
             this.cons.push("Not available at this time slot");
+            this.sortScore += 100;
         }
     }
 
@@ -249,7 +256,7 @@ class FacultyClassScheduleScore {
 
         if (loadAmountStatus === LoadAmountStatus.Underloaded) {
             this.pros.push("Is underloaded");
-            this.score += 100;
+            this.score += 500;
         }
     }
 }
@@ -285,17 +292,16 @@ export async function candidatesForClassSchedule(
     // Scort highest to lowest
     return candidates
         .sort((a, b) => {
-            if (a.score < b.score) {
-                return -1;
-            }
-
-            if (a.score > b.score) {
+            if (a.sortScore < b.sortScore) {
                 return 1;
             }
 
+            if (a.sortScore > b.sortScore) {
+                return -1;
+            }
+
             return 0;
-        })
-        .reverse();
+        });
 }
 
 export async function numberOfTimesTaught(fm: FacultyMember, s: Subject) {
