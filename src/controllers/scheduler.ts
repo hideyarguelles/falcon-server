@@ -150,7 +150,7 @@ class FacultyClassScheduleScore {
         const prepsCanTake = subjectsForFaculty.length < MAXIMUM_PREPS || assignedToSameSubject;
 
         if (!prepsCanTake) {
-            this.cons.push(`Already assigned to ${subjectsForFaculty.length} subjects`);
+            this.cons.push(`Already has ${subjectsForFaculty.length} preparations`);
         }
 
         if (assignedToSameSubject) {
