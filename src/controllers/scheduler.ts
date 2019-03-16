@@ -241,8 +241,9 @@ class FacultyClassScheduleScore {
     async calculateLoadStatus() {
         const loadAmountStatus = getStatusForLoadAmount(
             this.facultyMember.type,
-            this.classSchedules.length,
+            this.classSchedulesForFaculty.length,
         );
+
         if (loadAmountStatus === LoadAmountStatus.Underloaded) {
             this.pros.push("Is underloaded");
             this.score += 100;
