@@ -5,6 +5,7 @@ import FacultyMemberView from "../views/faculty_member";
 const facultyMemberView = new FacultyMemberView(new FacultyMemberController());
 export default new Router()
     .prefix("/faculty-members")
+    .get("/adjunct", facultyMemberView.getAllAdjunct)
     .get("/", facultyMemberView.getAll)
     .get("/current", facultyMemberView.getCurrentFaculty)
     .post("/", facultyMemberView.add)

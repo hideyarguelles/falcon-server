@@ -7,5 +7,6 @@ export default new Router()
     .prefix("/subjects")
     .get("/", subjectsView.getAll)
     .post("/", subjectsView.add)
+    .get("/courses", subjectsView.getCourses)
     .get("/:subjectId", subjectsView.get)
     .put("/:subjectId", subjectsView.update);

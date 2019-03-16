@@ -19,6 +19,14 @@ export default class FacultyMemberView extends View<FacultyMemberController> {
     };
 
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
+    getAllAdjunct = async (ctx: Context): Promise<void> => {
+        await this.controller.getAllAdjunct().then(ad => {
+            ctx.status = status.OK;
+            ctx.body = ad;
+        });
+    };
+
+    @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk])
     get = async (ctx: Context): Promise<void> => {
         const { facultyId } = ctx.params;
         await this.controller.get(facultyId).then(fm => {

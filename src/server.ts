@@ -173,7 +173,7 @@ const onDatabaseConnect = async () => {
     // await makeAccounts();
     // await resetPasswords();
     // await setTimeAvailability();
-    await acceptAllClasses();
+    // await acceptAllClasses();
     console.log(`Server listening at port ${config.port}`);
 };
 

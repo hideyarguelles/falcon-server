@@ -1,6 +1,6 @@
 import { validate } from "class-validator";
 import { FindOneOptions } from "typeorm";
-import { Subject } from "../entities";
+import { Subject, Course } from "../entities";
 import SubjectForm from "../entities/subject";
 import EntityNotFoundError from "../errors/not_found";
 import ValidationFailError from "../errors/validation_fail_error";
@@ -48,5 +48,10 @@ export default class SubjectController implements Controller {
 
         await subject.save();
         return subject;
+    }
+
+    async getCourses(): Promise<string[]> {
+        const courses = await Course.find();
+        return courses.map(c => c.name);
     }
 }

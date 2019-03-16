@@ -24,6 +24,14 @@ export default class SubjectView extends View<SubjectController> {
         });
     };
 
+    @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk, UserType.Faculty])
+    getCourses = async (ctx: Countext): Promise<void> => {
+        await this.controller.getCourses().then(c => {
+            ctx.status = status.OK;
+            ctx.body = c;
+        });
+    }
+
     @RequireAuthorization([UserType.Clerk])
     add = async (ctx: Context): Promise<void> => {
         const subjectForm: SubjectForm = ctx.request.body;
