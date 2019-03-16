@@ -208,7 +208,7 @@ export default class TermController implements Controller {
 
         // Prefill with values for load
         Object.keys(LoadAmountStatus).forEach(las => {
-            stats.load[las] = 0;
+            stats.load[las] = [];
         });
 
         // Prefill with values for rank
@@ -216,7 +216,9 @@ export default class TermController implements Controller {
             stats.rank[fmt] = 0;
         });
 
-        const facultyMembers = await FacultyMember.find();
+        const facultyMembers = await FacultyMember.find({
+            relations: ["user"],
+        });
 
         stats.activity.active = facultyMembers.filter(
             f => f.activity === ActivityType.Active,
@@ -230,7 +232,7 @@ export default class TermController implements Controller {
                 .filter(cs => cs.feedback.facultyMember.id === fm.id);
 
             const status = getStatusForLoadAmount(fm.type, classes.length);
-            stats.load[status]++;
+            stats.load[status].push(facultyMemberToProfile(fm));
 
             // Count rank
             stats.rank[fm.type]++;
@@ -644,13 +646,13 @@ export default class TermController implements Controller {
         const classSchedule = await ClassSchedule.findOne(classScheduleId, {
             relations: ["subject", "term"],
         });
-    
+
         classSchedule.adjunctName = adjunctName;
 
         const adjunctFaculty = await AdjunctFaculty.findOne({
             where: {
-                name: adjunctName
-            }
+                name: adjunctName,
+            },
         });
 
         if (!adjunctFaculty) {
