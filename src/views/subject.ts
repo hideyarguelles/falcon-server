@@ -25,7 +25,7 @@ export default class SubjectView extends View<SubjectController> {
     };
 
     @RequireAuthorization([UserType.Dean, UserType.AssociateDean, UserType.Clerk, UserType.Faculty])
-    getCourses = async (ctx: Countext): Promise<void> => {
+    getCourses = async (ctx: Context): Promise<void> => {
         await this.controller.getCourses().then(c => {
             ctx.status = status.OK;
             ctx.body = c;
