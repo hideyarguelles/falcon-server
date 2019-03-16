@@ -1,4 +1,4 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn } from "typeorm";m "class-validator";
+import { Entity, BaseEntity, Column, PrimaryGeneratedColumn } from "typeorm"; "class-validator";
 
 @Entity()
 export default class Course extends BaseEntity {

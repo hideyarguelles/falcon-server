@@ -36,7 +36,7 @@ import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
 import { facultyMemberToProfile } from "./faculty_member";
 import { candidatesForClassSchedule, makeSchedule, numberOfAssignments } from "./scheduler";
-import AdjunctFaculty from "src/entities/adjunct_faculty";
+import AdjunctFaculty from "../entities/adjunct_faculty";
 
 const formatClassSchedule = (cs: ClassSchedule) => ({
     id: cs.id,
