@@ -1,5 +1,12 @@
 import * as _ from "lodash";
-import { ClassSchedule, FacultyMember, FacultyMemberClassFeedback, Subject, Term, TimeConstraint } from "../entities";
+import {
+    ClassSchedule,
+    FacultyMember,
+    FacultyMemberClassFeedback,
+    Subject,
+    Term,
+    TimeConstraint,
+} from "../entities";
 import { FacultyMemberType, FeedbackStatus } from "../enums";
 import AvailabilityType from "../enums/availability_type";
 import { FacultyMemberTypeLoadingLimit } from "../enums/faculty_member_type";
@@ -208,11 +215,6 @@ class FacultyClassScheduleScore {
     }
 
     async calculateAvailability() {
-        if (this.availabilities.length === 0) {
-            this.cons.push("Faculty member did not submit time availability");
-            return;
-        }
-
         const availability = this.availabilities.find(
             tc =>
                 this.classSchedule.meetingDays === tc.meetingDays &&
@@ -221,10 +223,11 @@ class FacultyClassScheduleScore {
 
         // Faculty members that did not submit any availability information is automatically available every time
         const isAvailable =
-            availability &&
-            [AvailabilityType.Available, AvailabilityType.Preferred].includes(
-                availability.availabilityType,
-            );
+            this.availabilities.length === 0 ||
+            (availability &&
+                [AvailabilityType.Available, AvailabilityType.Preferred].includes(
+                    availability.availabilityType,
+                ));
 
         if (isAvailable) {
             if (availability.availabilityType === AvailabilityType.Preferred) {
