@@ -1,4 +1,6 @@
+export { default as AdjunctFaculty } from "./adjunct_faculty";
 export { default as ClassSchedule } from "./class_schedule";
+export { default as Course } from "./course";
 export { default as FacultyMember } from "./faculty_member";
 export { default as Degree } from "./faculty_subdocuments/degree";
 export { default as ExtensionWork } from "./faculty_subdocuments/extension_work";

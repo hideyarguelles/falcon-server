@@ -13,6 +13,7 @@ import {
     Term,
     TimeConstraint,
     User,
+    Course,
 } from "../entities";
 import { ParentClassSchedulesForm } from "../entities/forms/class_schedule";
 import { TermForm } from "../entities/forms/term";
@@ -35,6 +36,7 @@ import FacultyLoadingClassScheduleItem from "../interfaces/faculty_loading_class
 import FacultyLoadingFacultyMemberItem from "../interfaces/faculty_loading_faculty_member";
 import { facultyMemberToProfile } from "./faculty_member";
 import { candidatesForClassSchedule, makeSchedule, numberOfAssignments } from "./scheduler";
+import AdjunctFaculty from "src/entities/adjunct_faculty";
 
 const formatClassSchedule = (cs: ClassSchedule) => ({
     id: cs.id,
@@ -379,12 +381,23 @@ export default class TermController implements Controller {
             throw new ValidationFailError(formErrors);
         }
 
-        const promises = classSchedules.map(async cs => {
+        let courses: any[] = await Course.find();
+        courses = courses.map(c => c.name);
+
+        const newCourses = classSchedules
+            .map(cs => cs.course)
+            .filter(c => !courses.includes(c))
+            .map(c => Course.create({ name: c }))
+            .map(async c => {
+                await c.save();
+            });
+
+        const newClassSchedules = classSchedules.map(async cs => {
             term.classSchedules.push(cs);
             await cs.save();
         });
 
-        await Promise.all(promises);
+        await Promise.all([newCourses, newClassSchedules]);
         await term.save();
 
         return classSchedules.map(formatClassSchedule);
@@ -633,6 +646,17 @@ export default class TermController implements Controller {
         });
     
         classSchedule.adjunctName = adjunctName;
+
+        const adjunctFaculty = await AdjunctFaculty.findOne({
+            where: {
+                name: adjunctName
+            }
+        });
+
+        if (!adjunctFaculty) {
+            await AdjunctFaculty.create({ name: adjunctName }).save();
+        }
+
         await classSchedule.save();
         return formatClassSchedule(classSchedule);
     }

@@ -9,6 +9,7 @@ import Controller from "../interfaces/controller";
 import { FeedbackStatus, ActivityType, TermStatus } from "../enums";
 import * as _ from "lodash";
 import FacultyProfile from "../interfaces/faculty_profile";
+import AdjunctFaculty from "src/entities/adjunct_faculty";
 
 export function facultyMemberToProfile(fm) {
     return {
@@ -142,6 +143,11 @@ export default class FacultyMemberController implements Controller {
             degrees: fm.degrees,
             taughtSubjects: await this.getTaughtSubjects(fm.id),
         };
+    }
+
+    async getAllAdjunct(): Promise<String[]> {
+        const adjuncts = await AdjunctFaculty.find();
+        return adjuncts.map(a => a.name);
     }
 
     async add(userForm: UserForm, facultyMemberForm: FacultyMemberForm): Promise<FacultyMember> {
