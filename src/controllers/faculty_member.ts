@@ -9,7 +9,7 @@ import Controller from "../interfaces/controller";
 import { FeedbackStatus, ActivityType, TermStatus } from "../enums";
 import * as _ from "lodash";
 import FacultyProfile from "../interfaces/faculty_profile";
-import AdjunctFaculty from "src/entities/adjunct_faculty";
+import AdjunctFaculty from "../entities/adjunct_faculty";
 
 export function facultyMemberToProfile(fm) {
     return {
