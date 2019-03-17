@@ -226,12 +226,17 @@ class FacultyClassScheduleScore {
         );
 
         // Faculty members that did not submit any availability information is automatically available every time
+        if (this.availabilities.length === 0) {
+            this.pros.push("Available at this time slot");
+            this.sortScore += 400;
+            return;
+        }
+
         const isAvailable =
-            this.availabilities.length === 0 ||
-            (availability &&
-                [AvailabilityType.Available, AvailabilityType.Preferred].includes(
-                    availability.availabilityType,
-                ));
+            availability &&
+            [AvailabilityType.Available, AvailabilityType.Preferred].includes(
+                availability.availabilityType,
+            );
 
         if (isAvailable) {
             if (availability.availabilityType === AvailabilityType.Preferred) {
@@ -290,18 +295,17 @@ export async function candidatesForClassSchedule(
     );
 
     // Scort highest to lowest
-    return candidates
-        .sort((a, b) => {
-            if (a.sortScore < b.sortScore) {
-                return 1;
-            }
+    return candidates.sort((a, b) => {
+        if (a.sortScore < b.sortScore) {
+            return 1;
+        }
 
-            if (a.sortScore > b.sortScore) {
-                return -1;
-            }
+        if (a.sortScore > b.sortScore) {
+            return -1;
+        }
 
-            return 0;
-        });
+        return 0;
+    });
 }
 
 export async function numberOfTimesTaught(fm: FacultyMember, s: Subject) {
