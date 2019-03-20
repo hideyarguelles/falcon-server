@@ -218,6 +218,9 @@ export default class TermController implements Controller {
 
         const facultyMembers = await FacultyMember.find({
             relations: ["user"],
+            where: {
+                activity: ActivityType.Active,
+            },
         });
 
         stats.activity.active = facultyMembers.filter(
