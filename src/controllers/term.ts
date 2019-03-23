@@ -375,7 +375,7 @@ export default class TermController implements Controller {
         const term = await this.findTermById(termId, { relations: ["classSchedules"] });
         const subject = await this.findSubjectById(form.subjectId);
 
-        const classSchedules = form.classSchedules.map(child =>
+        let classSchedules = form.classSchedules.map(child =>
             ClassSchedule.create({ ...child, subject, term }),
         );
 
@@ -397,12 +397,12 @@ export default class TermController implements Controller {
                 await c.save();
             });
 
-        const newClassSchedules = classSchedules.map(async cs => {
+        classSchedules = await Promise.all(classSchedules.map(async cs => {
             term.classSchedules.push(cs);
-            await cs.save();
-        });
+            return await cs.save();
+        }));
 
-        await Promise.all([newCourses, newClassSchedules]);
+        await Promise.all([newCourses, classSchedules]);
         await term.save();
 
         return classSchedules.map(formatClassSchedule);
